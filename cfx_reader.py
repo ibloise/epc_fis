@@ -1,16 +1,10 @@
 import pandas as pd
-import os
 import numpy as np
-from constants.local_paths import *
-from constants.constants import *
+from constants.local_paths import localPaths
+from constants.constants import cfxData, folderManager
+from utils.utils import return_files
 
 
-
-def return_files(folder, full_path = True, folder_sep = "/"):
-    """
-    return list of files paths. If full_path, return absolute paths.
-    """
-    return [os.path.abspath(folder_sep.join([folder, file])) if full_path else file for file in os.listdir(folder)]
 
 def read_run_info(file, sheet, file_header):
     """
@@ -47,7 +41,7 @@ def assign_schema_to_file(file, conf_dict, regex_key):
 
     return return_dict
 
-def build_import_orders(conf_dict, data_path, key_reader = KEY_READER, regex_key = KEY_REG_EXP):
+def build_import_orders(conf_dict, data_path, key_reader = cfxData.KEY_READER, regex_key = cfxData.KEY_REG_EXP):
     """
     Construct a dictionary of orders based on assign_schema_to_file
     """
@@ -56,10 +50,10 @@ def build_import_orders(conf_dict, data_path, key_reader = KEY_READER, regex_key
     return orders
 
 
-def import_cfx_batch_data(orders, key_type = KEY_TYPE, long_format_name = LONG_FORMAT, matrix_format_name = MATRIX_FORMAT,
-                        key_datasheet = KEY_DATA_SHEET, key_usecols = KEY_IMPORT_HEADERS,
-                        key_run_info_sheet = KEY_RUN_INFO_SHEET, key_regex = KEY_REG_EXP,
-                        head_run = HEAD_RUN, head_type = HEAD_TYPE ,engine = "openpyxl"):
+def import_cfx_batch_data(orders, key_type = cfxData.KEY_TYPE, long_format_name = cfxData.LONG_FORMAT, matrix_format_name = cfxData.MATRIX_FORMAT,
+                        key_datasheet = cfxData.KEY_DATA_SHEET, key_usecols = cfxData.KEY_IMPORT_HEADERS,
+                        key_run_info_sheet = cfxData.KEY_RUN_INFO_SHEET, key_regex = cfxData.KEY_REG_EXP,
+                        head_run = cfxData.HEAD_RUN ,engine = "openpyxl"):
     """
     Import excels from CFX runs. Return a tuple with common (non-special) dataframes and reconverted (IN DEVELOP) matrix dataframes
     """
@@ -81,7 +75,8 @@ def import_cfx_batch_data(orders, key_type = KEY_TYPE, long_format_name = LONG_F
             pass
     return (common_imports, matrix_imports)
 
-def common_import_transform(common_import_dict, primary_key = [HEAD_WELL, HEAD_FLUOR, HEAD_TARGET, HEAD_SAMPLE, HEAD_RUN], replace_none = True):
+def common_import_transform(common_import_dict, primary_key = [cfxData.HEAD_WELL, cfxData.HEAD_FLUOR, cfxData.HEAD_TARGET, cfxData.HEAD_SAMPLE, cfxData.HEAD_RUN], 
+                            replace_none = True):
     merge_dict = {key : pd.concat(value) for key, value in common_import_dict.items()}
     cross_df = pd.DataFrame()
     for value in merge_dict.values():
@@ -94,9 +89,7 @@ def common_import_transform(common_import_dict, primary_key = [HEAD_WELL, HEAD_F
     return cross_df
 
 def main():
-    orders = build_import_orders(cfx_files_features, DATA_EXCHANGE_PATH)
+    orders = build_import_orders(cfxData.cfx_files_features, folderManager.FOLDER_SEP.join([localPaths.DATA_EXCHANGE_PATH, localPaths.CFX_PATH]))
     data = import_cfx_batch_data(orders)
     cross_df = common_import_transform(data[0])
     return cross_df
-
-main().to_excel("test.xlsx")
