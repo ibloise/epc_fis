@@ -4,7 +4,7 @@ __pycache__/
 
 #Local paths
 
-local_paths.py
+*local_paths.py
 
 # Distribution / packaging
 bin/
