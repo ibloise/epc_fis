@@ -1,10 +1,9 @@
+import os
 import pandas as pd
 import numpy as np
 from constants.local_paths import localPaths
-from constants.constants import cfxData, folderManager
+from constants.constants import cfxData
 from utils.utils import return_files
-
-
 
 def read_run_info(file, sheet, file_header):
     """
@@ -25,7 +24,7 @@ def concat_run_info_path(path, sheet_name, file_header):
     """
     Iterate in path with return files and read all run infos with read_run_info. Concat run_info and excel_relation dataframes
     """
-    df_list = [read_run_info(df, sheet=sheet_name, file_header=file_header) for df in return_files(path)]
+    df_list = [read_run_info(df, sheet=sheet_name, file_header=file_header) for df in return_files(path) if df != None]
     run_info, excel_relation = [pd.concat(df_list).drop_duplicates() for df_list in list(zip(*df_list))]
     return (run_info, excel_relation)
 
@@ -50,10 +49,12 @@ def build_import_orders(conf_dict, data_path, key_reader = cfxData.KEY_READER, r
     return orders
 
 
-def import_cfx_batch_data(orders, key_type = cfxData.KEY_TYPE, long_format_name = cfxData.LONG_FORMAT, matrix_format_name = cfxData.MATRIX_FORMAT,
+def import_cfx_batch_data(orders, store_files = True,key_type = cfxData.KEY_TYPE, long_format_name = cfxData.LONG_FORMAT, 
+                        matrix_format_name = cfxData.MATRIX_FORMAT,
                         key_datasheet = cfxData.KEY_DATA_SHEET, key_usecols = cfxData.KEY_IMPORT_HEADERS,
                         key_run_info_sheet = cfxData.KEY_RUN_INFO_SHEET, key_regex = cfxData.KEY_REG_EXP,
-                        head_run = cfxData.HEAD_RUN ,engine = "openpyxl"):
+                        head_run = cfxData.HEAD_RUN,
+                        engine = "openpyxl"):
     """
     Import excels from CFX runs. Return a tuple with common (non-special) dataframes and reconverted (IN DEVELOP) matrix dataframes
     """
@@ -73,7 +74,22 @@ def import_cfx_batch_data(orders, key_type = cfxData.KEY_TYPE, long_format_name 
         elif schema[key_type] == matrix_format_name:
             #Desarrollar función específica para transformar las matrices
             pass
+        if store_files:
+            store_file(file)
     return (common_imports, matrix_imports)
+
+def store_file(file, store_folder = os.path.join(localPaths.DATA_EXCHANGE_PATH, localPaths.CFX_PATH, localPaths.CFX_HISTORIC)):
+    import shutil
+    import filecmp
+    import os
+    if not os.path.exists(store_folder):
+        os.mkdir(store_folder)
+    filename = os.path.basename(file)
+    shutil.copyfile(file, os.path.join(store_folder, filename))
+    if filecmp.cmp(file, os.path.join(store_folder, filename)):
+        os.remove(file)
+    else:
+        print(f"Error in {file} management")
 
 def common_import_transform(common_import_dict, primary_key = [cfxData.HEAD_WELL, cfxData.HEAD_FLUOR, cfxData.HEAD_TARGET, cfxData.HEAD_SAMPLE, cfxData.HEAD_RUN], 
                             replace_none = True):
@@ -88,8 +104,15 @@ def common_import_transform(common_import_dict, primary_key = [cfxData.HEAD_WELL
             cross_df = cross_df.replace("None", np.nan).fillna(0)
     return cross_df
 
+
 def main():
-    orders = build_import_orders(cfxData.cfx_files_features, folderManager.FOLDER_SEP.join([localPaths.DATA_EXCHANGE_PATH, localPaths.CFX_PATH]))
-    data = import_cfx_batch_data(orders)
+    path = os.path.join(localPaths.DATA_EXCHANGE_PATH, localPaths.CFX_PATH)
+    run_info, excel_relation = concat_run_info_path(path, sheet_name=cfxData.RUN_INFO, file_header=cfxData.HEAD_EXCEL_FILE)
+    orders = build_import_orders(cfxData.cfx_files_features, path)
+    data = import_cfx_batch_data(orders, store_files=False)
     cross_df = common_import_transform(data[0])
-    return cross_df
+    print(run_info.columns)
+    return (cross_df)
+
+if __name__ == '__main__':
+    main()

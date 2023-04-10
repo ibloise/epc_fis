@@ -1,13 +1,8 @@
 #Constants
 
-#Miscellaneous
-
-class folderManager():
-        FOLDER_SEP = "/"
-
-#Keys
-
 class cfxData:
+        #Nota a futuro: SI hay conflicto entre versiones del CFX, configurar una variable de entrada "version" y definir las variables que cambien
+        #mediante if-else en función de la versión
     END_POINT = "end point"
     MELT_CURVE_DERIVATE = "melt curve derivate"
     MELT_CURVE_PEAK = "melt curve peak"
@@ -22,6 +17,7 @@ class cfxData:
     KEY_RUN_INFO_SHEET = "run info sheet"
     KEY_IMPORT_HEADERS = "import headers"
     KEY_ID_HEADER = "id headers"
+
 #Headers
 
     HEAD_WELL = "Well"
@@ -39,6 +35,19 @@ class cfxData:
     HEAD_EXCEL_FILE = "Excel file name"
     HEAD_TYPE = "data_type"
     HEAD_RUN = "run"
+
+    HEAD_FILE_NAME  = "File Name"
+    HEAD_USER = "Created By User"
+    HEAD_RUN_START = "Run Started"
+    HEAD_RUN_END = "Run Ended"
+    HEAD_SAMPLE_VOL = "Sample Vol"
+    HEAD_LID_TEMP = "Lid Temp"
+    HEAD_PROTOCOL = "Protocol File Name"
+    HEAD_PLATE_FILE = "Plate Setup File Name"
+    HEAD_BASE_SERIAL = "Base Serial Number"
+    HEAD_OPTICAL_SERIAL = "Optical Head Serial Number"
+    HEAD_SOFTWARE_VERSION  = "CFX Maestro Version"
+
 #Options:
 
     LONG_FORMAT = "long format"
@@ -132,6 +141,7 @@ class microbData:
     VALUE_NDM = "NDM"
     VALUE_BLEE = "BLE"
     VALUE_ANT = "ANT"
+    VALUE_NEGATIVE = "Negativo"
     OXA_48 = "oxa48"
     VIM = "vim"
     KPC = "kpc"
@@ -210,3 +220,221 @@ class microbData:
                 VALUE_BLEE: BLEE,
                 VALUE_CARBA: CARBA,
                 VALUE_ANT: ANT }
+    
+
+class sqlLoader:
+    SCHEMA = "FIS_EPC"
+
+    #Origins:
+
+    MICROB = "microb"
+    CFX = "cfx"
+    SERVOLAB = "servolab"
+    SAVANA = "savana"
+
+    SOURCES = {
+        MICROB : microbData,
+        CFX :  cfxData,
+        SERVOLAB : "",
+        SAVANA : ""
+    }
+
+     #Tables
+        #Microb
+    TABLE_PATIENTS = "patients"
+    TABLE_SAMPLES = "samples"
+    TABLE_RESULTS = "results"
+    TABLE_CARBA = "carba"
+    TABLE_CODMO = "mocodif"
+    TABLE_GFH = "GFH"
+
+        #pcr
+    TABLE_PCR = "pcr"
+    TABLE_MELTING = "melting"
+    TABLE_CYCLES = "cycles"
+    TABLE_PROJECTS = "projects"
+
+    #Headers
+        #Patients
+    HEAD_NHC = "nhc"
+    HEAD_CIPA = "cipa"
+    HEAD_NAME = "name"
+    HEAD_LASTNAME = "lastname"
+    HEAD_BIRTHDATE = "birth_date"
+    HEAD_SEX = "sex"
+
+        #samples
+    HEAD_SAMPLE = "sampleid"
+    HEAD_SAMPLE_TYPE = "sample_type"
+    HEAD_ENTRY = "entry_date"
+    HEAD_RESULTDATE = "result_date"
+    HEAD_GFH = "cod_gfh"
+
+        #results
+    HEAD_RESULT = "result"
+
+        #carbas
+    HEAD_CARBA = "carba"
+
+        #pcr
+    HEAD_WELL = "well"
+    HEAD_FLUOR = "fluor"
+    HEAD_TARGET = "target"
+    HEAD_RFU = "end_rfu"
+    HEAD_RUN = "run"
+    HEAD_MELT = "mel_temperature"
+    HEAD_PEAK = "peak_height"
+    HEAD_BEGIN_TEMP = "begin_temperature"
+    HEAD_END_TEMP = "End Temperature"
+    HEAD_CT = "ct"
+
+        #projects
+    HEAD_FILENAME = "filename"
+    HEAD_USER = "user"
+    HEAD_RUN_START = "run_started"
+    HEAD_RUN_END = "run_ended"
+    HEAD_SAMPLE_VOL = "sample_vol"
+    HEAD_LID_TEMP = "lid_temp"
+    HEAD_PROTOCOL_FILE = "protocol_filename"
+    HEAD_PLATE_FILE = "plate_file"
+    HEAD_BASE_SERIAL = "base_serial_number"
+    HEAD_OPTICAL_SERIAL = "optical_serial_number"
+    HEAD_SOFTWARE_VERSION = "software_v"
+
+    #excel
+    HEAD_EXCEL_FILE = "excel_filename"
+
+    #Tables
+
+    TABLES = {
+        TABLE_PATIENTS : {
+                            HEAD_NHC : {
+                                MICROB : [SOURCES[MICROB].HEAD_NHC]},
+                            HEAD_CIPA : {
+                                MICROB : [SOURCES[MICROB].HEAD_CIPA]
+                            },
+                            HEAD_NAME : {
+                                MICROB : [SOURCES[MICROB].HEAD_NAME]
+                          },
+                          HEAD_LASTNAME:{
+                                MICROB : [SOURCES[MICROB].HEAD_LASTNAME_1, SOURCES[MICROB].HEAD_LASTNAME_2]
+                          },
+                          HEAD_BIRTHDATE : {
+                                MICROB : [SOURCES[MICROB].HEAD_DBIRTH]
+                          },
+                          HEAD_SEX : {
+                                MICROB : [SOURCES[MICROB].HEAD_SEX]
+                          }
+        },
+        TABLE_SAMPLES : {
+                        HEAD_NHC : {
+                            MICROB : [SOURCES[MICROB].HEAD_NHC]
+                        },
+                        HEAD_SAMPLE : {
+                            MICROB : [SOURCES[MICROB].HEAD_NSAMPLE]
+                         },
+                        HEAD_SAMPLE_TYPE : {
+                            MICROB : [SOURCES[MICROB].HEAD_SAMPLE_TYPE]
+                        },
+                        HEAD_ENTRY : {
+                            MICROB : [SOURCES[MICROB].HEAD_DENTRY]
+                         },
+                        HEAD_RESULTDATE : {
+                            MICROB : [SOURCES[MICROB].HEAD_DRESULT]
+                         },
+                        HEAD_GFH : {
+                            MICROB :[SOURCES[MICROB].HEAD_COD_GFH]
+                         }
+        },
+        TABLE_RESULTS : {
+                        HEAD_SAMPLE : {
+                            MICROB : [SOURCES[MICROB].HEAD_NSAMPLE]
+                        } ,
+                         HEAD_RESULT : {
+                            MICROB : [SOURCES[MICROB].HEAD_MO]
+                         }
+        },
+        TABLE_CARBA : {
+                        HEAD_SAMPLE : {
+                            MICROB : [SOURCES[MICROB].HEAD_NSAMPLE]
+                        } ,
+                        HEAD_RESULT : {
+                        MICROB : [SOURCES[MICROB].HEAD_MO]
+                         },
+                       HEAD_CARBA : {
+                        MICROB : [SOURCES[MICROB].HEAD_RESULT]
+                       }
+        },
+        TABLE_PCR : {
+                    HEAD_WELL : {
+                        CFX : [SOURCES[CFX].HEAD_WELL]
+                    },
+                     HEAD_FLUOR : {
+                        CFX : [SOURCES[CFX].HEAD_FLUOR]
+                     },
+                     HEAD_TARGET :  {
+                        CFX : [SOURCES[CFX].HEAD_TARGET]
+                     },
+                     HEAD_SAMPLE : {
+                        CFX : [SOURCES[CFX].HEAD_SAMPLE]
+                     },
+                     HEAD_RFU : {
+                        CFX : [SOURCES[CFX].HEAD_END_RFU]
+                     },
+                     HEAD_RUN : {
+                        CFX : [SOURCES[CFX].HEAD_RUN]
+                     },
+                     HEAD_MELT : {
+                        CFX : [SOURCES[CFX].HEAD_MELT_TEMP]
+                     },
+                     HEAD_PEAK : {
+                        CFX : [SOURCES[CFX].HEAD_PEAK_HEIGHT]
+                     },
+                     HEAD_BEGIN_TEMP : {
+                        CFX : [SOURCES[CFX].HEAD_BEGIN_TEMP]
+                     },
+                     HEAD_END_TEMP : {
+                        CFX : [SOURCES[CFX].HEAD_END_TEMP]
+                     },
+                     HEAD_CT : {
+                        CFX : [SOURCES[CFX].HEAD_CQ]
+                     }
+        },
+        TABLE_PROJECTS : {HEAD_FILENAME : {
+                            CFX : [SOURCES[CFX].HEAD_FILE_NAME]
+                            },
+                          HEAD_USER : {
+                            CFX : [SOURCES[CFX].HEAD_USER]
+                          },
+                          HEAD_RUN_START : {
+                            CFX : [SOURCES[CFX].HEAD_RUN_START]
+                          },
+                          HEAD_RUN_END : {
+                            CFX : [SOURCES[CFX].HEAD_RUN_END]
+                          },
+                          HEAD_SAMPLE_VOL : {
+                            CFX : [SOURCES[CFX].HEAD_SAMPLE_VOL]
+        
+                          },
+                          HEAD_LID_TEMP  : {
+                            CFX : [SOURCES[CFX].HEAD_LID_TEMP]
+                          },
+                          HEAD_PROTOCOL_FILE : {
+                            CFX : [SOURCES[CFX].HEAD_PROTOCOL]
+                          },
+                          HEAD_PLATE_FILE : {
+                            CFX : [SOURCES[CFX].HEAD_PLATE_FILE]
+                          },
+                          HEAD_BASE_SERIAL : {
+                            CFX : [SOURCES[CFX].HEAD_BASE_SERIAL]
+                          },
+                          HEAD_OPTICAL_SERIAL : {
+                            CFX : [SOURCES[CFX].HEAD_OPTICAL_SERIAL]
+                          },
+                          HEAD_SOFTWARE_VERSION : {
+                            CFX : [SOURCES[CFX].HEAD_SOFTWARE_VERSION]
+                          }
+        }
+
+    }
+

@@ -1,11 +1,9 @@
 import pandas as pd
+import os
 import functools
 from constants.local_paths import localPaths
 from constants.constants import microbData, folderManager
 from utils.utils import return_files
-
-
-#Tables
 
 def read_microbdata_batch(files_list, delimiter = microbData.MICROB_DELIM, usecols = microbData.USE_COLS, converters = {microbData.HEAD_NSAMPLE :  str},
                           mo_header = microbData.HEAD_MO):
@@ -19,9 +17,15 @@ def read_microbdata_batch(files_list, delimiter = microbData.MICROB_DELIM, useco
 def split_dataframes(data, tables_dict):
     return {key : data[value].drop_duplicates() for key, value in tables_dict.items()}
 
-files = return_files(folderManager.FOLDER_SEP.join([localPaths.DATA_EXCHANGE_PATH, localPaths.MICROB_PATH]))
-data = read_microbdata_batch(files).fillna({microbData.HEAD_MO : "Negativo", microbData.HEAD_RESULT : "Negativo"})
-dataframes = split_dataframes(data, microbData.SUBSETS)
+def filter_carba_table(carba_table, result_head = microbData.HEAD_MO, filter_criteria = microbData.VALUE_NEGATIVE):
+    return(carba_table[carba_table[result_head] != filter_criteria])
+
+def main():
+    files = return_files(os.path.join(localPaths.DATA_EXCHANGE_PATH, localPaths.MICROB_PATH))
+    data = read_microbdata_batch(files).fillna({microbData.HEAD_MO : microbData.VALUE_NEGATIVE, microbData.HEAD_RESULT : microbData.VALUE_NEGATIVE})
+    dataframes = split_dataframes(data, microbData.SUBSETS)
+    dataframes[microbData.CARBA_TABLE] = filter_carba_table(dataframes[microbData.CARBA_TABLE])
+    return dataframes
 
 
 
