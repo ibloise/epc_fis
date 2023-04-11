@@ -105,7 +105,7 @@ def common_import_transform(common_import_dict, primary_key = [cfxData.HEAD_WELL
     return cross_df
 
 
-def main():
+def cfx_reader():
     path = os.path.join(localPaths.DATA_EXCHANGE_PATH, localPaths.CFX_PATH)
     run_info, excel_relation = concat_run_info_path(path, sheet_name=cfxData.RUN_INFO, file_header=cfxData.HEAD_EXCEL_FILE)
     orders = build_import_orders(cfxData.cfx_files_features, path)
@@ -114,5 +114,3 @@ def main():
     print(run_info.columns)
     return (cross_df)
 
-if __name__ == '__main__':
-    main()

@@ -131,6 +131,7 @@ class microbData:
     HEAD_SAMPLE_TYPE = "Des.Muestra"
     HEAD_MO = "Des.Microorganismo"
     HEAD_RESULT = "Cod.Observaciones.1"
+    HEAD_DES_RESULT = "Des.Resultado"
 
     #Miscellaneous
     MICROB_DELIM = "|"
@@ -142,6 +143,7 @@ class microbData:
     VALUE_BLEE = "BLE"
     VALUE_ANT = "ANT"
     VALUE_NEGATIVE = "Negativo"
+    VALUE_PENDING  = "PENDIENTE DE RESULTADO"
     OXA_48 = "oxa48"
     VIM = "vim"
     KPC = "kpc"
@@ -165,7 +167,8 @@ class microbData:
             HEAD_DES_GFH,
             HEAD_SAMPLE_TYPE,
             HEAD_MO,
-            HEAD_RESULT
+            HEAD_RESULT,
+            HEAD_DES_RESULT
     ]
 
     COLS_SUB_PATIENTS = [HEAD_NHC,
@@ -223,7 +226,16 @@ class microbData:
     
 
 class sqlLoader:
-    SCHEMA = "FIS_EPC"
+    #Variables
+
+    SQL_STRUCTURE_KEY = "SQL_STRUCTURE"
+    COLS_KEY = "cols"
+    SOURCES_KEY = "sources"
+    SQL_COMPOSITE = "sql_composite"
+    REQUIRE_KEY = "table_requirements"
+    #SCHEMA
+    FIS_SCHEMA = "FIS_EPC"
+    TEST_SCHEMA = "FIS_EPC_TEST_ZONE"
 
     #Origins:
 
@@ -238,6 +250,13 @@ class sqlLoader:
         SERVOLAB : "",
         SAVANA : ""
     }
+
+    #messages
+    MSG_CONNECT  = "Conectando a MySQL"
+    MSG_USER = "Introduce el usuario:"
+    MSG_PASS = "Introduce tu contraseña:"
+    MSG_SUCCESS = "Conexión establecida!"
+    MSG_CONNECT_ERROR = "No se ha podido establecer la conexión con MySQL. El proceso se ha abortado"
 
      #Tables
         #Microb
@@ -285,7 +304,7 @@ class sqlLoader:
     HEAD_MELT = "mel_temperature"
     HEAD_PEAK = "peak_height"
     HEAD_BEGIN_TEMP = "begin_temperature"
-    HEAD_END_TEMP = "End Temperature"
+    HEAD_END_TEMP = "end_temperature"
     HEAD_CT = "ct"
 
         #projects
@@ -308,133 +327,198 @@ class sqlLoader:
 
     TABLES = {
         TABLE_PATIENTS : {
+            COLS_KEY: {
                             HEAD_NHC : {
+                                SQL_STRUCTURE_KEY : "VARCHAR(15) PRIMARY KEY NOT NULL",
                                 MICROB : [SOURCES[MICROB].HEAD_NHC]},
                             HEAD_CIPA : {
+                                SQL_STRUCTURE_KEY : "VARCHAR(15)",
                                 MICROB : [SOURCES[MICROB].HEAD_CIPA]
                             },
                             HEAD_NAME : {
+                                SQL_STRUCTURE_KEY : "VARCHAR(15)",
                                 MICROB : [SOURCES[MICROB].HEAD_NAME]
                           },
                           HEAD_LASTNAME:{
+                                SQL_STRUCTURE_KEY : "VARCHAR(15)",
                                 MICROB : [SOURCES[MICROB].HEAD_LASTNAME_1, SOURCES[MICROB].HEAD_LASTNAME_2]
                           },
                           HEAD_BIRTHDATE : {
+                                SQL_STRUCTURE_KEY : "DATE NOT NULL",
                                 MICROB : [SOURCES[MICROB].HEAD_DBIRTH]
                           },
                           HEAD_SEX : {
+                                SQL_STRUCTURE_KEY : "CHAR(5)",
                                 MICROB : [SOURCES[MICROB].HEAD_SEX]
                           }
+            },
+            SQL_COMPOSITE : "",
+            REQUIRE_KEY : []
         },
         TABLE_SAMPLES : {
+            COLS_KEY : {
                         HEAD_NHC : {
+                            SQL_STRUCTURE_KEY : "VARCHAR(15) NOT NULL", 
                             MICROB : [SOURCES[MICROB].HEAD_NHC]
                         },
                         HEAD_SAMPLE : {
+                            SQL_STRUCTURE_KEY : "VARCHAR(15) PRIMARY KEY NOT NULL",
                             MICROB : [SOURCES[MICROB].HEAD_NSAMPLE]
                          },
                         HEAD_SAMPLE_TYPE : {
+                            SQL_STRUCTURE_KEY : "VARCHAR(10) NOT NULL",
                             MICROB : [SOURCES[MICROB].HEAD_SAMPLE_TYPE]
                         },
                         HEAD_ENTRY : {
+                            SQL_STRUCTURE_KEY : "DATE NOT NULL",
                             MICROB : [SOURCES[MICROB].HEAD_DENTRY]
                          },
                         HEAD_RESULTDATE : {
+                            SQL_STRUCTURE_KEY : "DATE NOT NULL",
                             MICROB : [SOURCES[MICROB].HEAD_DRESULT]
                          },
                         HEAD_GFH : {
+                            SQL_STRUCTURE_KEY : "VARCHAR(10)",
                             MICROB :[SOURCES[MICROB].HEAD_COD_GFH]
                          }
+            },
+            SQL_COMPOSITE : f"FOREIGN KEY ({HEAD_NHC}) REFERENCES {TABLE_PATIENTS}({HEAD_NHC})",
+            REQUIRE_KEY : [TABLE_PATIENTS]
         },
         TABLE_RESULTS : {
+            COLS_KEY: {
                         HEAD_SAMPLE : {
+                            SQL_STRUCTURE_KEY : "VARCHAR (15)",
                             MICROB : [SOURCES[MICROB].HEAD_NSAMPLE]
                         } ,
                          HEAD_RESULT : {
+                            SQL_STRUCTURE_KEY : "VARCHAR (20)",
                             MICROB : [SOURCES[MICROB].HEAD_MO]
                          }
+            },
+            SQL_COMPOSITE : "",
+            REQUIRE_KEY : []
         },
         TABLE_CARBA : {
+            COLS_KEY : {
                         HEAD_SAMPLE : {
+                            SQL_STRUCTURE_KEY : "VARCHAR(15)",
                             MICROB : [SOURCES[MICROB].HEAD_NSAMPLE]
                         } ,
                         HEAD_RESULT : {
+                        SQL_STRUCTURE_KEY : "VARCHAR(15)",
                         MICROB : [SOURCES[MICROB].HEAD_MO]
                          },
                        HEAD_CARBA : {
+                        SQL_STRUCTURE_KEY : "VARCHAR(10)",
                         MICROB : [SOURCES[MICROB].HEAD_RESULT]
                        }
+            },
+            SQL_COMPOSITE : f"PRIMARY KEY ({HEAD_SAMPLE}, {HEAD_RESULT}), FOREIGN KEY ({HEAD_SAMPLE}) REFERENCES {TABLE_SAMPLES}({HEAD_SAMPLE})",
+            REQUIRE_KEY : [TABLE_SAMPLES]
         },
-        TABLE_PCR : {
-                    HEAD_WELL : {
-                        CFX : [SOURCES[CFX].HEAD_WELL]
-                    },
-                     HEAD_FLUOR : {
-                        CFX : [SOURCES[CFX].HEAD_FLUOR]
-                     },
-                     HEAD_TARGET :  {
-                        CFX : [SOURCES[CFX].HEAD_TARGET]
-                     },
-                     HEAD_SAMPLE : {
-                        CFX : [SOURCES[CFX].HEAD_SAMPLE]
-                     },
-                     HEAD_RFU : {
-                        CFX : [SOURCES[CFX].HEAD_END_RFU]
-                     },
-                     HEAD_RUN : {
-                        CFX : [SOURCES[CFX].HEAD_RUN]
-                     },
-                     HEAD_MELT : {
-                        CFX : [SOURCES[CFX].HEAD_MELT_TEMP]
-                     },
-                     HEAD_PEAK : {
-                        CFX : [SOURCES[CFX].HEAD_PEAK_HEIGHT]
-                     },
-                     HEAD_BEGIN_TEMP : {
-                        CFX : [SOURCES[CFX].HEAD_BEGIN_TEMP]
-                     },
-                     HEAD_END_TEMP : {
-                        CFX : [SOURCES[CFX].HEAD_END_TEMP]
-                     },
-                     HEAD_CT : {
-                        CFX : [SOURCES[CFX].HEAD_CQ]
-                     }
-        },
-        TABLE_PROJECTS : {HEAD_FILENAME : {
+        TABLE_PROJECTS : {
+            COLS_KEY : {
+                        HEAD_FILENAME : {
+                            SQL_STRUCTURE_KEY : "VARCHAR (15) PRIMARY KEY",
                             CFX : [SOURCES[CFX].HEAD_FILE_NAME]
                             },
                           HEAD_USER : {
+                            SQL_STRUCTURE_KEY : "VARCHAR(10)",
                             CFX : [SOURCES[CFX].HEAD_USER]
                           },
                           HEAD_RUN_START : {
+                            SQL_STRUCTURE_KEY : "DATETIME",
                             CFX : [SOURCES[CFX].HEAD_RUN_START]
                           },
                           HEAD_RUN_END : {
+                            SQL_STRUCTURE_KEY : "DATETIME",
                             CFX : [SOURCES[CFX].HEAD_RUN_END]
                           },
                           HEAD_SAMPLE_VOL : {
+                            SQL_STRUCTURE_KEY : "VARCHAR(10)",
                             CFX : [SOURCES[CFX].HEAD_SAMPLE_VOL]
         
                           },
                           HEAD_LID_TEMP  : {
+                            SQL_STRUCTURE_KEY : "INT",
                             CFX : [SOURCES[CFX].HEAD_LID_TEMP]
                           },
                           HEAD_PROTOCOL_FILE : {
+                            SQL_STRUCTURE_KEY : "VARCHAR(100)",
                             CFX : [SOURCES[CFX].HEAD_PROTOCOL]
                           },
                           HEAD_PLATE_FILE : {
+                            SQL_STRUCTURE_KEY : "VARCHAR(100)",
                             CFX : [SOURCES[CFX].HEAD_PLATE_FILE]
                           },
                           HEAD_BASE_SERIAL : {
+                            SQL_STRUCTURE_KEY : "VARCHAR(15)",
                             CFX : [SOURCES[CFX].HEAD_BASE_SERIAL]
                           },
                           HEAD_OPTICAL_SERIAL : {
+                            SQL_STRUCTURE_KEY : "VARCHAR (15)",
                             CFX : [SOURCES[CFX].HEAD_OPTICAL_SERIAL]
                           },
                           HEAD_SOFTWARE_VERSION : {
+                            SQL_STRUCTURE_KEY : "VARCHAR(15)",
                             CFX : [SOURCES[CFX].HEAD_SOFTWARE_VERSION]
                           }
+            },
+            SQL_COMPOSITE : "",
+            REQUIRE_KEY : []
+        },
+        TABLE_PCR : {
+            COLS_KEY : {
+                    HEAD_WELL : {
+                        SQL_STRUCTURE_KEY : "VARCHAR(3)",
+                        CFX : [SOURCES[CFX].HEAD_WELL]
+                    },
+                     HEAD_FLUOR : { 
+                        SQL_STRUCTURE_KEY : "VARCHAR(10)",
+                        CFX : [SOURCES[CFX].HEAD_FLUOR]
+                     },
+                     HEAD_TARGET :  {
+                        SQL_STRUCTURE_KEY : "VARCHAR(10)",
+                        CFX : [SOURCES[CFX].HEAD_TARGET]
+                     },
+                     HEAD_SAMPLE : {
+                        SQL_STRUCTURE_KEY : "VARCHAR (15) NOT NULL",
+                        CFX : [SOURCES[CFX].HEAD_SAMPLE]
+                     },
+                     HEAD_RFU : {
+                        SQL_STRUCTURE_KEY : "INT",
+                        CFX : [SOURCES[CFX].HEAD_END_RFU]
+                     },
+                     HEAD_RUN : {
+                        SQL_STRUCTURE_KEY : "VARCHAR (30) NOT NULL",
+                        CFX : [SOURCES[CFX].HEAD_RUN]
+                     },
+                     HEAD_MELT : { 
+                        SQL_STRUCTURE_KEY : "INT",
+                        CFX : [SOURCES[CFX].HEAD_MELT_TEMP]
+                     },
+                     HEAD_PEAK : {
+                        SQL_STRUCTURE_KEY : "INT",
+                        CFX : [SOURCES[CFX].HEAD_PEAK_HEIGHT]
+                     },
+                     HEAD_BEGIN_TEMP : {
+                        SQL_STRUCTURE_KEY : "INT",
+                        CFX : [SOURCES[CFX].HEAD_BEGIN_TEMP]
+                     },
+                     HEAD_END_TEMP : {
+                        SQL_STRUCTURE_KEY : "INT",
+                        CFX : [SOURCES[CFX].HEAD_END_TEMP]
+                     },
+                     HEAD_CT : {
+                        SQL_STRUCTURE_KEY : "INT",
+                        CFX : [SOURCES[CFX].HEAD_CQ]
+                     }
+            },
+            SQL_COMPOSITE : (f"PRIMARY KEY ({HEAD_WELL}, {HEAD_SAMPLE}, {HEAD_RUN}), " 
+            f"FOREIGN KEY ({HEAD_SAMPLE}) REFERENCES {TABLE_SAMPLES}({HEAD_SAMPLE}), "
+            f"FOREIGN KEY ({HEAD_RUN}) REFERENCES {TABLE_PROJECTS}({HEAD_FILENAME})"),
+            REQUIRE_KEY : [TABLE_SAMPLES, TABLE_PROJECTS]
         }
-
     }
 
