@@ -3,13 +3,22 @@
 class cfxData:
         #Nota a futuro: SI hay conflicto entre versiones del CFX, configurar una variable de entrada "version" y definir las variables que cambien
         #mediante if-else en función de la versión
+
+    #Tables
+    TABLE_GENERAL = "general_data"
+    TABLE_MELT = "melt_data"
+    TABLE_CYCLE = "cycle_data"
+    TABLE_PROJECTS = "projects"
+
     END_POINT = "end point"
     MELT_CURVE_DERIVATE = "melt curve derivate"
     MELT_CURVE_PEAK = "melt curve peak"
     MELT_CURVE_RFU = "melt curve rfu"
     QUANTIFICATION_AMPLIFICATION_RESULT = "quantification amplification result"
     QUANTIFICATION_CQ_RESULT = "quantification cq result"
-
+    
+    #keys
+    VALUE = "value"
     KEY_REG_EXP = "regex"
     KEY_READER = "reader"
     KEY_TYPE = "type"
@@ -17,8 +26,19 @@ class cfxData:
     KEY_RUN_INFO_SHEET = "run info sheet"
     KEY_IMPORT_HEADERS = "import headers"
     KEY_ID_HEADER = "id headers"
+    KEY_PIVOT_VALUE_HEADER = "pivot value"
 
-#Headers
+    #Files Names
+    END_POINT = "End Point Results"
+    MELT_CURVE_DERIVATE = "Melt Curve Derivative Results"
+    MELT_CURVE_PEAK = "Melt Curve Peak Results"
+    MELT_CURVE_RFU = "Melt Curve RFU Results"
+    QUANT_AMP_RESULT = "Quantification Amplification Results"
+    QUANT_CQ_RESULT = "Quantification Cq Results"
+    MELT_NOVEL_KEY = "Meltin Derivate and RFU Results"
+
+
+    #Headers
 
     HEAD_WELL = "Well"
     HEAD_FLUOR = "Fluor"
@@ -47,8 +67,11 @@ class cfxData:
     HEAD_BASE_SERIAL = "Base Serial Number"
     HEAD_OPTICAL_SERIAL = "Optical Head Serial Number"
     HEAD_SOFTWARE_VERSION  = "CFX Maestro Version"
+    HEAD_PIVOT_MELT_DERIVATE = "melt_derivate"
+    HEAD_PIVOT_MELT_RFU = "melt_rfu"
+    HEAD_PIVOT_CYCLE_RFU = "cycle_RFU"
 
-#Options:
+    #Options:
 
     LONG_FORMAT = "long format"
     MATRIX_FORMAT = "matrix format"
@@ -58,7 +81,7 @@ class cfxData:
 
     cfx_files_features = {
         END_POINT: {
-            KEY_REG_EXP : "End Point Results",
+            KEY_REG_EXP : END_POINT,
             KEY_READER : True,
             KEY_TYPE : LONG_FORMAT,
             KEY_DATA_SHEET : SYBR,
@@ -66,16 +89,17 @@ class cfxData:
             KEY_IMPORT_HEADERS : [HEAD_WELL, HEAD_FLUOR, HEAD_TARGET, HEAD_SAMPLE, HEAD_END_RFU]
         },
         MELT_CURVE_DERIVATE: {
-            KEY_REG_EXP : "Melt Curve Derivative Results",
+            KEY_REG_EXP : MELT_CURVE_DERIVATE,
             KEY_READER : True,
             KEY_TYPE : MATRIX_FORMAT,
             KEY_DATA_SHEET : SYBR,
             KEY_RUN_INFO_SHEET : RUN_INFO,
-            KEY_ID_HEADER : [HEAD_TEMPERATURE]
+            KEY_ID_HEADER : [HEAD_TEMPERATURE],
+            KEY_PIVOT_VALUE_HEADER: HEAD_PIVOT_MELT_DERIVATE
 
         },
         MELT_CURVE_PEAK: {
-            KEY_REG_EXP : "Melt Curve Peak Results",
+            KEY_REG_EXP : MELT_CURVE_PEAK,
             KEY_READER : True,
             KEY_TYPE : LONG_FORMAT,
             KEY_DATA_SHEET : ZERO,
@@ -83,23 +107,26 @@ class cfxData:
             KEY_IMPORT_HEADERS : [HEAD_WELL, HEAD_FLUOR, HEAD_TARGET, HEAD_SAMPLE, HEAD_MELT_TEMP, HEAD_PEAK_HEIGHT, HEAD_BEGIN_TEMP, HEAD_END_TEMP]
         },
         MELT_CURVE_RFU: {
-            KEY_REG_EXP : "Melt Curve RFU Results",
+            KEY_REG_EXP : MELT_CURVE_RFU,
             KEY_READER : True,
             KEY_TYPE : MATRIX_FORMAT,
             KEY_DATA_SHEET : SYBR,
             KEY_RUN_INFO_SHEET : RUN_INFO,
-            KEY_ID_HEADER : [HEAD_TEMPERATURE]
+            KEY_ID_HEADER : [HEAD_TEMPERATURE],
+            KEY_PIVOT_VALUE_HEADER: HEAD_PIVOT_MELT_RFU
         },
         QUANTIFICATION_AMPLIFICATION_RESULT: {
-            KEY_REG_EXP : "Quantification Amplification Results",
+            KEY_REG_EXP : QUANT_AMP_RESULT,
             KEY_READER : True,
             KEY_TYPE : MATRIX_FORMAT,
             KEY_DATA_SHEET : SYBR,
             KEY_RUN_INFO_SHEET : RUN_INFO,
-            KEY_ID_HEADER : [HEAD_CYCLE]
+            KEY_ID_HEADER : [HEAD_CYCLE],
+            KEY_PIVOT_VALUE_HEADER : HEAD_PIVOT_CYCLE_RFU
+
         },
         QUANTIFICATION_CQ_RESULT: {
-            KEY_REG_EXP : "Quantification Cq Results",
+            KEY_REG_EXP : QUANT_CQ_RESULT ,
             KEY_READER : True,
             KEY_TYPE : LONG_FORMAT,
             KEY_DATA_SHEET : ZERO,
@@ -233,6 +260,7 @@ class sqlLoader:
     SOURCES_KEY = "sources"
     SQL_COMPOSITE = "sql_composite"
     REQUIRE_KEY = "table_requirements"
+
     #SCHEMA
     FIS_SCHEMA = "FIS_EPC"
     TEST_SCHEMA = "FIS_EPC_TEST_ZONE"
@@ -320,6 +348,14 @@ class sqlLoader:
     HEAD_OPTICAL_SERIAL = "optical_serial_number"
     HEAD_SOFTWARE_VERSION = "software_v"
 
+    #melting
+    HEAD_TEMPERATURE = "temperature"
+        #HEAD_WELL
+    HEAD_MELT_DERIVATE = "melt_derivate"
+        #HEAD_RUN
+        #HEAD_SAMPLE
+    HEAD_MELT_RFU = "melt_rfu"
+
     #excel
     HEAD_EXCEL_FILE = "excel_filename"
 
@@ -353,7 +389,10 @@ class sqlLoader:
                           }
             },
             SQL_COMPOSITE : "",
-            REQUIRE_KEY : []
+            REQUIRE_KEY : [],
+            SOURCES_KEY: {
+                MICROB: [SOURCES[MICROB].PATIENT_TABLE]
+            }
         },
         TABLE_SAMPLES : {
             COLS_KEY : {
@@ -383,7 +422,10 @@ class sqlLoader:
                          }
             },
             SQL_COMPOSITE : f"FOREIGN KEY ({HEAD_NHC}) REFERENCES {TABLE_PATIENTS}({HEAD_NHC})",
-            REQUIRE_KEY : [TABLE_PATIENTS]
+            REQUIRE_KEY : [TABLE_PATIENTS],
+            SOURCES_KEY: {
+                MICROB:SOURCES[MICROB].SAMPLE_TABLE
+            }
         },
         TABLE_RESULTS : {
             COLS_KEY: {
@@ -397,7 +439,10 @@ class sqlLoader:
                          }
             },
             SQL_COMPOSITE : "",
-            REQUIRE_KEY : []
+            REQUIRE_KEY : [],
+            SOURCES_KEY: {
+                MICROB: [SOURCES[MICROB].RESULTS_TABLE]
+            }
         },
         TABLE_CARBA : {
             COLS_KEY : {
@@ -415,7 +460,10 @@ class sqlLoader:
                        }
             },
             SQL_COMPOSITE : f"PRIMARY KEY ({HEAD_SAMPLE}, {HEAD_RESULT}), FOREIGN KEY ({HEAD_SAMPLE}) REFERENCES {TABLE_SAMPLES}({HEAD_SAMPLE})",
-            REQUIRE_KEY : [TABLE_SAMPLES]
+            REQUIRE_KEY : [TABLE_SAMPLES],
+            SOURCES_KEY: {
+                MICROB: [SOURCES[MICROB].CARBA_TABLE]
+            }
         },
         TABLE_PROJECTS : {
             COLS_KEY : {
@@ -466,7 +514,10 @@ class sqlLoader:
                           }
             },
             SQL_COMPOSITE : "",
-            REQUIRE_KEY : []
+            REQUIRE_KEY : [],
+            SOURCES_KEY: {
+                CFX: SOURCES[CFX].TABLE_PROJECTS
+            }
         },
         TABLE_PCR : {
             COLS_KEY : {
@@ -483,7 +534,7 @@ class sqlLoader:
                         CFX : [SOURCES[CFX].HEAD_TARGET]
                      },
                      HEAD_SAMPLE : {
-                        SQL_STRUCTURE_KEY : "VARCHAR (15) NOT NULL",
+                        SQL_STRUCTURE_KEY : "VARCHAR(15) NOT NULL",
                         CFX : [SOURCES[CFX].HEAD_SAMPLE]
                      },
                      HEAD_RFU : {
@@ -518,7 +569,45 @@ class sqlLoader:
             SQL_COMPOSITE : (f"PRIMARY KEY ({HEAD_WELL}, {HEAD_SAMPLE}, {HEAD_RUN}), " 
             f"FOREIGN KEY ({HEAD_SAMPLE}) REFERENCES {TABLE_SAMPLES}({HEAD_SAMPLE}), "
             f"FOREIGN KEY ({HEAD_RUN}) REFERENCES {TABLE_PROJECTS}({HEAD_FILENAME})"),
-            REQUIRE_KEY : [TABLE_SAMPLES, TABLE_PROJECTS]
+            REQUIRE_KEY : [TABLE_SAMPLES, TABLE_PROJECTS],
+            SOURCES_KEY: {
+                CFX: SOURCES[CFX].TABLE_GENERAL
+            },   
+        },
+        TABLE_MELTING:{
+            COLS_KEY: {
+                    HEAD_TEMPERATURE:{
+                        SQL_STRUCTURE_KEY: "INT",
+                        CFX: [SOURCES[CFX].HEAD_TEMPERATURE]
+                    },
+                    HEAD_WELL:{
+                        SQL_STRUCTURE_KEY: "VARCHAR(5) NOT NULL",
+                        CFX: [SOURCES[CFX].HEAD_WELL]
+                    },
+                    HEAD_MELT_DERIVATE:{
+                        SQL_STRUCTURE_KEY: "INT",
+                        CFX: [SOURCES[CFX].HEAD_PIVOT_MELT_DERIVATE]
+                    },
+                    HEAD_RUN: {
+                        SQL_STRUCTURE_KEY: "VARCHAR(30) NOT NULL",
+                        CFX: [SOURCES[CFX].HEAD_RUN]
+                    },
+                    HEAD_SAMPLE: {
+                        SQL_STRUCTURE_KEY: "VARCHAR(15) NOT NULL",
+                        CFX: [SOURCES[CFX].HEAD_SAMPLE]
+                    },
+                    HEAD_MELT_RFU: {
+                        SQL_STRUCTURE_KEY: "INT",
+                        CFX: [SOURCES[CFX].HEAD_PIVOT_MELT_RFU]
+                    }
+                },
+                SQL_COMPOSITE: (f"PRIMARY KEY ({HEAD_WELL}, {HEAD_SAMPLE}, {HEAD_RUN}, {HEAD_TEMPERATURE}), "
+                                    f"FOREIGN KEY ({HEAD_SAMPLE}) REFERENCES {TABLE_SAMPLES} ({HEAD_SAMPLE}), "
+                                    f"FOREIGN KEY ({HEAD_RUN}) REFERENCES {TABLE_PROJECTS} ({HEAD_FILENAME})"),
+                REQUIRE_KEY: [TABLE_SAMPLES, TABLE_PROJECTS],
+                SOURCES_KEY: {
+                            CFX: SOURCES[CFX].MELT_NOVEL_KEY
+                }
         }
     }
 

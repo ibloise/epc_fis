@@ -5,6 +5,8 @@ from constants.local_paths import localPaths
 from constants.constants import cfxData
 from utils.utils import return_files
 
+#Class??
+
 def read_run_info(file, sheet, file_header):
     """
     read run info sheet and return two dataframes: info of run and relation of 
@@ -12,7 +14,7 @@ def read_run_info(file, sheet, file_header):
     """
     try:
         run_info = pd.read_excel(file, sheet_name=sheet, header=None, index_col=0
-                ).transpose()
+                ).transpose() 
         excel_relation = run_info.iloc[:,[0]].copy()
         excel_relation[file_header] = os.path.basename(file)
         return (run_info.drop_duplicates(), excel_relation)
@@ -48,37 +50,72 @@ def build_import_orders(conf_dict, data_path, key_reader = cfxData.KEY_READER, r
     orders = {file : schema for file, schema in relation.items() if schema[key_reader]}
     return orders
 
+def get_run (file, sheet_name, engine):
+    return pd.read_excel(file, sheet_name=sheet_name, header=None, index_col=0, engine=engine).iloc[0,0]
+
+def import_tabular(file, sheet_dataset, sheet_run,  head_run, usecols,engine):
+    data = pd.read_excel(file, sheet_name=sheet_dataset, usecols=usecols, engine=engine)
+    run = get_run(file, sheet_run, engine)
+    data[head_run] = run
+    #TEMPORAL: ELIMINAR TRAS LA PRIMERA CARGA
+    data["Target"] = data["Target"].fillna("Screening")
+    return data
+
+def import_matrix(file, sheet_dataset, sheet_run,  head_run,index_col,engine, value_name = cfxData.VALUE, var_name = cfxData.HEAD_WELL, fix_well = True):
+
+    run = get_run(file, sheet_name=sheet_run,engine=engine)
+    matrix = pd.read_excel(file, sheet_name=sheet_dataset, usecols=lambda x: "Unnamed" not in x).melt(id_vars=index_col, 
+                            var_name = var_name, value_name = value_name)
+    matrix[head_run] = run
+    if fix_well:
+        # well format is A01 in long dataframes and A1 in wide dataframes. This code fix them
+        matrix[var_name] = matrix[var_name].apply(lambda x :  x if (len(x) > 2) else (x[0] + "0" + x[1])) 
+    return matrix
+
+def append_list_dict(dictionary, element_to_append, key):
+    if key not in dictionary.keys():
+        dictionary[key] = [element_to_append]
+    else:
+        dictionary[key].append(element_to_append)
+    return dictionary
 
 def import_cfx_batch_data(orders, store_files = True,key_type = cfxData.KEY_TYPE, long_format_name = cfxData.LONG_FORMAT, 
                         matrix_format_name = cfxData.MATRIX_FORMAT,
                         key_datasheet = cfxData.KEY_DATA_SHEET, key_usecols = cfxData.KEY_IMPORT_HEADERS,
                         key_run_info_sheet = cfxData.KEY_RUN_INFO_SHEET, key_regex = cfxData.KEY_REG_EXP,
-                        head_run = cfxData.HEAD_RUN,
+                        head_run = cfxData.HEAD_RUN, key_id_head = cfxData.KEY_ID_HEADER, head_well = cfxData.HEAD_WELL,
+                        head_sample = cfxData.HEAD_SAMPLE,
+                        key_value = cfxData.KEY_PIVOT_VALUE_HEADER,
                         engine = "openpyxl"):
     """
     Import excels from CFX runs. Return a tuple with common (non-special) dataframes and reconverted (IN DEVELOP) matrix dataframes
     """
     common_imports = {}
     matrix_imports = {}
+    well_samples = pd.DataFrame(columns=[head_run, head_well, head_sample])
     for file,schema in orders.items():
+        parameters = (schema[key_datasheet], schema[key_run_info_sheet], head_run)
         if schema[key_type] == long_format_name:
-            data = pd.read_excel(file, sheet_name=schema[key_datasheet], usecols=schema[key_usecols], engine=engine)
-            run = pd.read_excel(file, sheet_name=schema[key_run_info_sheet], header=None, index_col=0, engine=engine).iloc[0,0]
-            data[head_run] = run
-        #TEMPORAL: ELIMINAR TRAS LA PRIMERA CARGA
-            data["Target"] = data["Target"].fillna("Screening")
-            if schema[key_regex] not in common_imports.keys():
-                common_imports[schema[key_regex]] = [data]
-            else:
-                common_imports[schema[key_regex]].append(data)
+            data = import_tabular(file, *parameters,
+                                      usecols=schema[key_usecols], engine=engine)
+            well_samples = pd.concat([well_samples, data[[head_run, head_well, head_sample]]]).drop_duplicates(ignore_index=True)
+            common_imports = append_list_dict(common_imports, data, schema[key_regex])
         elif schema[key_type] == matrix_format_name:
-            #Desarrollar función específica para transformar las matrices
-            pass
+            data = import_matrix(file, *parameters, index_col=schema[key_id_head], value_name = schema[key_value], engine=engine)
+            matrix_imports = append_list_dict(matrix_imports, data, schema[key_regex])
         if store_files:
             store_file(file)
-    return (common_imports, matrix_imports)
+        #cross data
+        matrix_imports_fix = {}
+        for key, value in matrix_imports.items():
+            new_values = [pd.merge(data, well_samples, on = [head_run, head_well], how="left") for data in value]
+            matrix_imports_fix[key] = new_values
+    return (common_imports, matrix_imports_fix)
 
 def store_file(file, store_folder = os.path.join(localPaths.DATA_EXCHANGE_PATH, localPaths.CFX_PATH, localPaths.CFX_HISTORIC)):
+    """
+    Function to store files. Create folder if necessary.
+    """
     import shutil
     import filecmp
     import os
@@ -86,31 +123,57 @@ def store_file(file, store_folder = os.path.join(localPaths.DATA_EXCHANGE_PATH, 
         os.mkdir(store_folder)
     filename = os.path.basename(file)
     shutil.copyfile(file, os.path.join(store_folder, filename))
-    if filecmp.cmp(file, os.path.join(store_folder, filename)):
+    if filecmp.cmp(file, os.path.join(store_folder, filename)): #Compare copy file with original file before delete original file.
+        #¿¿Y si lo cambiamos a shutil.move????
         os.remove(file)
     else:
         print(f"Error in {file} management")
 
-def common_import_transform(common_import_dict, primary_key = [cfxData.HEAD_WELL, cfxData.HEAD_FLUOR, cfxData.HEAD_TARGET, cfxData.HEAD_SAMPLE, cfxData.HEAD_RUN], 
+def common_import_transform(common_import_dict,common_table_name, primary_key = [cfxData.HEAD_WELL, cfxData.HEAD_FLUOR, cfxData.HEAD_TARGET, cfxData.HEAD_SAMPLE, cfxData.HEAD_RUN], 
                             replace_none = True):
-    merge_dict = {key : pd.concat(value) for key, value in common_import_dict.items()}
+    merge_dict = {key : pd.concat(value) for key, value in common_import_dict.items()} #Merge dataframe by key
     cross_df = pd.DataFrame()
-    for value in merge_dict.values():
+    for value in merge_dict.values(): 
         if cross_df.empty:
-            cross_df = value
+            cross_df = value #Create first dataframe
         else:
-            cross_df = pd.merge(cross_df, value, on = primary_key)
+            cross_df = pd.merge(cross_df, value, on = primary_key) #Join all data
         if replace_none:
-            cross_df = cross_df.replace("None", np.nan).fillna(0)
-    return cross_df
+            cross_df = cross_df.replace("None", np.nan).fillna(0) #Replace NA and None by 0s (cycle and temperature data are NAs in CFX)
+    return {common_table_name: cross_df}
 
+def matrix_import_transform(matrix_import_dict):
+    """
+    Concat matrix dataframe
+    """
+    return {key:pd.concat(values, ignore_index=True) for key, values in matrix_import_dict.items()}
+
+def concat_dict_dataframes (dataframes_dict, keys_to_concat, primary_key, novel_key):
+    """
+    Concat dictionary of dataframes based on keys_to_concat list with primary_key
+    """
+    new_dict = {novel_key: pd.DataFrame()}
+    for key, data in dataframes_dict.items():
+        if key in keys_to_concat:
+            if new_dict[novel_key].empty:
+                new_dict[novel_key] = data
+            else:
+                new_dict[novel_key] = new_dict[novel_key].merge(data, on = primary_key, how="outer")
+        else:
+            new_dict[key] = data
+    return new_dict
 
 def cfx_reader():
     path = os.path.join(localPaths.DATA_EXCHANGE_PATH, localPaths.CFX_PATH)
     run_info, excel_relation = concat_run_info_path(path, sheet_name=cfxData.RUN_INFO, file_header=cfxData.HEAD_EXCEL_FILE)
     orders = build_import_orders(cfxData.cfx_files_features, path)
     data = import_cfx_batch_data(orders, store_files=False)
-    cross_df = common_import_transform(data[0])
-    print(run_info.columns)
-    return (cross_df)
+    cross_df = common_import_transform(data[0], common_table_name=cfxData.COMMON_TABLE_NAME)
+    matrix_dict = matrix_import_transform(data[1])
+    matrix_dict = concat_dict_dataframes(matrix_dict, [cfxData.MELT_CURVE_DERIVATE, cfxData.MELT_CURVE_RFU],
+                                         primary_key = [cfxData.HEAD_WELL, cfxData.HEAD_TEMPERATURE,
+                                               cfxData.HEAD_RUN, cfxData.HEAD_SAMPLE],
+                                               novel_key=cfxData.MELT_NOVEL_KEY)
+    return (cross_df, matrix_dict)
 
+print(cfx_reader())

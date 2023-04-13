@@ -29,3 +29,5 @@ def microb_reader():
     dataframes = split_dataframes(data, microbData.SUBSETS)
     dataframes[microbData.CARBA_TABLE] = filter_carba_table(dataframes[microbData.CARBA_TABLE])
     return dataframes
+
+print(microb_reader())
