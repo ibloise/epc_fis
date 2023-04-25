@@ -306,7 +306,8 @@ class sqlLoader:
     HEAD_NHC = "nhc"
     HEAD_CIPA = "cipa"
     HEAD_NAME = "name"
-    HEAD_LASTNAME = "lastname"
+    HEAD_LASTNAME_1 = "lastname_1"
+    HEAD_LASTNAME_2 = "lastname_2"
     HEAD_BIRTHDATE = "birth_date"
     HEAD_SEX = "sex"
 
@@ -366,59 +367,64 @@ class sqlLoader:
             COLS_KEY: {
                             HEAD_NHC : {
                                 SQL_STRUCTURE_KEY : "VARCHAR(15) PRIMARY KEY NOT NULL",
-                                MICROB : [SOURCES[MICROB].HEAD_NHC]},
+                                MICROB : SOURCES[MICROB].HEAD_NHC
+                                },
                             HEAD_CIPA : {
                                 SQL_STRUCTURE_KEY : "VARCHAR(15)",
-                                MICROB : [SOURCES[MICROB].HEAD_CIPA]
+                                MICROB : SOURCES[MICROB].HEAD_CIPA
                             },
                             HEAD_NAME : {
                                 SQL_STRUCTURE_KEY : "VARCHAR(15)",
-                                MICROB : [SOURCES[MICROB].HEAD_NAME]
+                                MICROB : SOURCES[MICROB].HEAD_NAME
                           },
-                          HEAD_LASTNAME:{
+                          HEAD_LASTNAME_1:{
                                 SQL_STRUCTURE_KEY : "VARCHAR(15)",
-                                MICROB : [SOURCES[MICROB].HEAD_LASTNAME_1, SOURCES[MICROB].HEAD_LASTNAME_2]
+                                MICROB :SOURCES[MICROB].HEAD_LASTNAME_1
+                          },
+                            HEAD_LASTNAME_2:{
+                                SQL_STRUCTURE_KEY : "VARCHAR(15)",
+                                MICROB :SOURCES[MICROB].HEAD_LASTNAME_2
                           },
                           HEAD_BIRTHDATE : {
                                 SQL_STRUCTURE_KEY : "DATE NOT NULL",
-                                MICROB : [SOURCES[MICROB].HEAD_DBIRTH]
+                                MICROB : SOURCES[MICROB].HEAD_DBIRTH
                           },
                           HEAD_SEX : {
                                 SQL_STRUCTURE_KEY : "CHAR(5)",
-                                MICROB : [SOURCES[MICROB].HEAD_SEX]
+                                MICROB : SOURCES[MICROB].HEAD_SEX
                           }
             },
             SQL_COMPOSITE : "",
             REQUIRE_KEY : [],
             SOURCES_KEY: {
-                MICROB: [SOURCES[MICROB].PATIENT_TABLE]
+                MICROB: SOURCES[MICROB].PATIENT_TABLE
             }
         },
         TABLE_SAMPLES : {
             COLS_KEY : {
                         HEAD_NHC : {
                             SQL_STRUCTURE_KEY : "VARCHAR(15) NOT NULL", 
-                            MICROB : [SOURCES[MICROB].HEAD_NHC]
+                            MICROB : SOURCES[MICROB].HEAD_NHC
                         },
                         HEAD_SAMPLE : {
                             SQL_STRUCTURE_KEY : "VARCHAR(15) PRIMARY KEY NOT NULL",
-                            MICROB : [SOURCES[MICROB].HEAD_NSAMPLE]
+                            MICROB : SOURCES[MICROB].HEAD_NSAMPLE
                          },
                         HEAD_SAMPLE_TYPE : {
                             SQL_STRUCTURE_KEY : "VARCHAR(10) NOT NULL",
-                            MICROB : [SOURCES[MICROB].HEAD_SAMPLE_TYPE]
+                            MICROB : SOURCES[MICROB].HEAD_SAMPLE_TYPE
                         },
                         HEAD_ENTRY : {
                             SQL_STRUCTURE_KEY : "DATE NOT NULL",
-                            MICROB : [SOURCES[MICROB].HEAD_DENTRY]
+                            MICROB : SOURCES[MICROB].HEAD_DENTRY
                          },
                         HEAD_RESULTDATE : {
                             SQL_STRUCTURE_KEY : "DATE NOT NULL",
-                            MICROB : [SOURCES[MICROB].HEAD_DRESULT]
+                            MICROB : SOURCES[MICROB].HEAD_DRESULT
                          },
                         HEAD_GFH : {
                             SQL_STRUCTURE_KEY : "VARCHAR(10)",
-                            MICROB :[SOURCES[MICROB].HEAD_COD_GFH]
+                            MICROB :SOURCES[MICROB].HEAD_COD_GFH
                          }
             },
             SQL_COMPOSITE : f"FOREIGN KEY ({HEAD_NHC}) REFERENCES {TABLE_PATIENTS}({HEAD_NHC})",
@@ -431,86 +437,86 @@ class sqlLoader:
             COLS_KEY: {
                         HEAD_SAMPLE : {
                             SQL_STRUCTURE_KEY : "VARCHAR (15)",
-                            MICROB : [SOURCES[MICROB].HEAD_NSAMPLE]
+                            MICROB : SOURCES[MICROB].HEAD_NSAMPLE
                         } ,
                          HEAD_RESULT : {
                             SQL_STRUCTURE_KEY : "VARCHAR (20)",
-                            MICROB : [SOURCES[MICROB].HEAD_MO]
+                            MICROB : SOURCES[MICROB].HEAD_MO
                          }
             },
             SQL_COMPOSITE : "",
             REQUIRE_KEY : [],
             SOURCES_KEY: {
-                MICROB: [SOURCES[MICROB].RESULTS_TABLE]
+                MICROB: SOURCES[MICROB].RESULTS_TABLE
             }
         },
         TABLE_CARBA : {
             COLS_KEY : {
                         HEAD_SAMPLE : {
                             SQL_STRUCTURE_KEY : "VARCHAR(15)",
-                            MICROB : [SOURCES[MICROB].HEAD_NSAMPLE]
+                            MICROB : SOURCES[MICROB].HEAD_NSAMPLE
                         } ,
                         HEAD_RESULT : {
                         SQL_STRUCTURE_KEY : "VARCHAR(15)",
-                        MICROB : [SOURCES[MICROB].HEAD_MO]
+                        MICROB : SOURCES[MICROB].HEAD_MO
                          },
                        HEAD_CARBA : {
                         SQL_STRUCTURE_KEY : "VARCHAR(10)",
-                        MICROB : [SOURCES[MICROB].HEAD_RESULT]
+                        MICROB : SOURCES[MICROB].HEAD_RESULT
                        }
             },
             SQL_COMPOSITE : f"PRIMARY KEY ({HEAD_SAMPLE}, {HEAD_RESULT}), FOREIGN KEY ({HEAD_SAMPLE}) REFERENCES {TABLE_SAMPLES}({HEAD_SAMPLE})",
             REQUIRE_KEY : [TABLE_SAMPLES],
             SOURCES_KEY: {
-                MICROB: [SOURCES[MICROB].CARBA_TABLE]
+                MICROB: SOURCES[MICROB].CARBA_TABLE
             }
         },
         TABLE_PROJECTS : {
             COLS_KEY : {
                         HEAD_FILENAME : {
                             SQL_STRUCTURE_KEY : "VARCHAR (15) PRIMARY KEY",
-                            CFX : [SOURCES[CFX].HEAD_FILE_NAME]
+                            CFX :SOURCES[CFX].HEAD_FILE_NAME
                             },
                           HEAD_USER : {
                             SQL_STRUCTURE_KEY : "VARCHAR(10)",
-                            CFX : [SOURCES[CFX].HEAD_USER]
+                            CFX : SOURCES[CFX].HEAD_USER
                           },
                           HEAD_RUN_START : {
                             SQL_STRUCTURE_KEY : "DATETIME",
-                            CFX : [SOURCES[CFX].HEAD_RUN_START]
+                            CFX : SOURCES[CFX].HEAD_RUN_START
                           },
                           HEAD_RUN_END : {
                             SQL_STRUCTURE_KEY : "DATETIME",
-                            CFX : [SOURCES[CFX].HEAD_RUN_END]
+                            CFX : SOURCES[CFX].HEAD_RUN_END
                           },
                           HEAD_SAMPLE_VOL : {
                             SQL_STRUCTURE_KEY : "VARCHAR(10)",
-                            CFX : [SOURCES[CFX].HEAD_SAMPLE_VOL]
+                            CFX : SOURCES[CFX].HEAD_SAMPLE_VOL
         
                           },
                           HEAD_LID_TEMP  : {
                             SQL_STRUCTURE_KEY : "INT",
-                            CFX : [SOURCES[CFX].HEAD_LID_TEMP]
+                            CFX : SOURCES[CFX].HEAD_LID_TEMP
                           },
                           HEAD_PROTOCOL_FILE : {
                             SQL_STRUCTURE_KEY : "VARCHAR(100)",
-                            CFX : [SOURCES[CFX].HEAD_PROTOCOL]
+                            CFX : SOURCES[CFX].HEAD_PROTOCOL
                           },
                           HEAD_PLATE_FILE : {
                             SQL_STRUCTURE_KEY : "VARCHAR(100)",
-                            CFX : [SOURCES[CFX].HEAD_PLATE_FILE]
+                            CFX : SOURCES[CFX].HEAD_PLATE_FILE
                           },
                           HEAD_BASE_SERIAL : {
                             SQL_STRUCTURE_KEY : "VARCHAR(15)",
-                            CFX : [SOURCES[CFX].HEAD_BASE_SERIAL]
+                            CFX : SOURCES[CFX].HEAD_BASE_SERIAL
                           },
                           HEAD_OPTICAL_SERIAL : {
                             SQL_STRUCTURE_KEY : "VARCHAR (15)",
-                            CFX : [SOURCES[CFX].HEAD_OPTICAL_SERIAL]
+                            CFX : SOURCES[CFX].HEAD_OPTICAL_SERIAL
                           },
                           HEAD_SOFTWARE_VERSION : {
                             SQL_STRUCTURE_KEY : "VARCHAR(15)",
-                            CFX : [SOURCES[CFX].HEAD_SOFTWARE_VERSION]
+                            CFX : SOURCES[CFX].HEAD_SOFTWARE_VERSION
                           }
             },
             SQL_COMPOSITE : "",
@@ -523,47 +529,47 @@ class sqlLoader:
             COLS_KEY : {
                     HEAD_WELL : {
                         SQL_STRUCTURE_KEY : "VARCHAR(3)",
-                        CFX : [SOURCES[CFX].HEAD_WELL]
+                        CFX : SOURCES[CFX].HEAD_WELL
                     },
                      HEAD_FLUOR : { 
                         SQL_STRUCTURE_KEY : "VARCHAR(10)",
-                        CFX : [SOURCES[CFX].HEAD_FLUOR]
+                        CFX : SOURCES[CFX].HEAD_FLUOR
                      },
                      HEAD_TARGET :  {
                         SQL_STRUCTURE_KEY : "VARCHAR(10)",
-                        CFX : [SOURCES[CFX].HEAD_TARGET]
+                        CFX : SOURCES[CFX].HEAD_TARGET
                      },
                      HEAD_SAMPLE : {
                         SQL_STRUCTURE_KEY : "VARCHAR(15) NOT NULL",
-                        CFX : [SOURCES[CFX].HEAD_SAMPLE]
+                        CFX : SOURCES[CFX].HEAD_SAMPLE
                      },
                      HEAD_RFU : {
                         SQL_STRUCTURE_KEY : "INT",
-                        CFX : [SOURCES[CFX].HEAD_END_RFU]
+                        CFX : SOURCES[CFX].HEAD_END_RFU
                      },
                      HEAD_RUN : {
                         SQL_STRUCTURE_KEY : "VARCHAR (30) NOT NULL",
-                        CFX : [SOURCES[CFX].HEAD_RUN]
+                        CFX : SOURCES[CFX].HEAD_RUN
                      },
                      HEAD_MELT : { 
                         SQL_STRUCTURE_KEY : "INT",
-                        CFX : [SOURCES[CFX].HEAD_MELT_TEMP]
+                        CFX : SOURCES[CFX].HEAD_MELT_TEMP
                      },
                      HEAD_PEAK : {
                         SQL_STRUCTURE_KEY : "INT",
-                        CFX : [SOURCES[CFX].HEAD_PEAK_HEIGHT]
+                        CFX : SOURCES[CFX].HEAD_PEAK_HEIGHT
                      },
                      HEAD_BEGIN_TEMP : {
                         SQL_STRUCTURE_KEY : "INT",
-                        CFX : [SOURCES[CFX].HEAD_BEGIN_TEMP]
+                        CFX : SOURCES[CFX].HEAD_BEGIN_TEMP
                      },
                      HEAD_END_TEMP : {
                         SQL_STRUCTURE_KEY : "INT",
-                        CFX : [SOURCES[CFX].HEAD_END_TEMP]
+                        CFX : SOURCES[CFX].HEAD_END_TEMP
                      },
                      HEAD_CT : {
                         SQL_STRUCTURE_KEY : "INT",
-                        CFX : [SOURCES[CFX].HEAD_CQ]
+                        CFX : SOURCES[CFX].HEAD_CQ
                      }
             },
             SQL_COMPOSITE : (f"PRIMARY KEY ({HEAD_WELL}, {HEAD_SAMPLE}, {HEAD_RUN}), " 
@@ -578,27 +584,27 @@ class sqlLoader:
             COLS_KEY: {
                     HEAD_TEMPERATURE:{
                         SQL_STRUCTURE_KEY: "INT",
-                        CFX: [SOURCES[CFX].HEAD_TEMPERATURE]
+                        CFX: SOURCES[CFX].HEAD_TEMPERATURE
                     },
                     HEAD_WELL:{
                         SQL_STRUCTURE_KEY: "VARCHAR(5) NOT NULL",
-                        CFX: [SOURCES[CFX].HEAD_WELL]
+                        CFX: SOURCES[CFX].HEAD_WELL
                     },
                     HEAD_MELT_DERIVATE:{
                         SQL_STRUCTURE_KEY: "INT",
-                        CFX: [SOURCES[CFX].HEAD_PIVOT_MELT_DERIVATE]
+                        CFX: SOURCES[CFX].HEAD_PIVOT_MELT_DERIVATE
                     },
                     HEAD_RUN: {
                         SQL_STRUCTURE_KEY: "VARCHAR(30) NOT NULL",
-                        CFX: [SOURCES[CFX].HEAD_RUN]
+                        CFX: SOURCES[CFX].HEAD_RUN
                     },
                     HEAD_SAMPLE: {
                         SQL_STRUCTURE_KEY: "VARCHAR(15) NOT NULL",
-                        CFX: [SOURCES[CFX].HEAD_SAMPLE]
+                        CFX: SOURCES[CFX].HEAD_SAMPLE
                     },
                     HEAD_MELT_RFU: {
                         SQL_STRUCTURE_KEY: "INT",
-                        CFX: [SOURCES[CFX].HEAD_PIVOT_MELT_RFU]
+                        CFX: SOURCES[CFX].HEAD_PIVOT_MELT_RFU
                     }
                 },
                 SQL_COMPOSITE: (f"PRIMARY KEY ({HEAD_WELL}, {HEAD_SAMPLE}, {HEAD_RUN}, {HEAD_TEMPERATURE}), "
