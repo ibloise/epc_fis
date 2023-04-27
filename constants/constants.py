@@ -1,5 +1,6 @@
 #Constants
 
+
 class cfxData:
         #Nota a futuro: SI hay conflicto entre versiones del CFX, configurar una variable de entrada "version" y definir las variables que cambien
         #mediante if-else en función de la versión
@@ -9,6 +10,9 @@ class cfxData:
     TABLE_MELT = "melt_data"
     TABLE_CYCLE = "cycle_data"
     TABLE_PROJECTS = "projects"
+    TABLE_COMMON = "common_table"
+    TABLE_RUN_INFO = "run_info"
+    TABLE_EXCELS = "excel_relation"
 
     END_POINT = "end point"
     MELT_CURVE_DERIVATE = "melt curve derivate"
@@ -16,6 +20,7 @@ class cfxData:
     MELT_CURVE_RFU = "melt curve rfu"
     QUANTIFICATION_AMPLIFICATION_RESULT = "quantification amplification result"
     QUANTIFICATION_CQ_RESULT = "quantification cq result"
+
     
     #keys
     VALUE = "value"
@@ -79,6 +84,9 @@ class cfxData:
     ZERO = "0"
     RUN_INFO = "Run Information"
 
+    #FOlders
+
+    
     cfx_files_features = {
         END_POINT: {
             KEY_REG_EXP : END_POINT,
@@ -260,6 +268,11 @@ class sqlLoader:
     SOURCES_KEY = "sources"
     SQL_COMPOSITE = "sql_composite"
     REQUIRE_KEY = "table_requirements"
+    TABLES_KEY = "tables"
+    SRC_KEY = "src"
+    DEST_KEY = "dest"
+    DEST_TABLE_KEY = "dest_table"
+    SRC_TABLE_KEY = "src_table"
 
     #SCHEMA
     FIS_SCHEMA = "FIS_EPC"
@@ -271,6 +284,13 @@ class sqlLoader:
     CFX = "cfx"
     SERVOLAB = "servolab"
     SAVANA = "savana"
+
+    SOURCES_LIST = [
+        MICROB,
+        CFX,
+        SERVOLAB,
+        SAVANA
+    ]
 
     SOURCES = {
         MICROB : microbData,
@@ -424,7 +444,7 @@ class sqlLoader:
             SQL_COMPOSITE : f"FOREIGN KEY ({HEAD_NHC}) REFERENCES {TABLE_PATIENTS}({HEAD_NHC})",
             REQUIRE_KEY : [TABLE_PATIENTS],
             SOURCES_KEY: {
-                MICROB:SOURCES[MICROB].SAMPLE_TABLE
+                MICROB:[SOURCES[MICROB].SAMPLE_TABLE]
             }
         },
         TABLE_RESULTS : {
@@ -516,7 +536,7 @@ class sqlLoader:
             SQL_COMPOSITE : "",
             REQUIRE_KEY : [],
             SOURCES_KEY: {
-                CFX: SOURCES[CFX].TABLE_PROJECTS
+                CFX: [SOURCES[CFX].TABLE_PROJECTS]
             }
         },
         TABLE_PCR : {
@@ -571,7 +591,7 @@ class sqlLoader:
             f"FOREIGN KEY ({HEAD_RUN}) REFERENCES {TABLE_PROJECTS}({HEAD_FILENAME})"),
             REQUIRE_KEY : [TABLE_SAMPLES, TABLE_PROJECTS],
             SOURCES_KEY: {
-                CFX: SOURCES[CFX].TABLE_GENERAL
+                CFX: [SOURCES[CFX].TABLE_GENERAL]
             },   
         },
         TABLE_MELTING:{
@@ -606,7 +626,7 @@ class sqlLoader:
                                     f"FOREIGN KEY ({HEAD_RUN}) REFERENCES {TABLE_PROJECTS} ({HEAD_FILENAME})"),
                 REQUIRE_KEY: [TABLE_SAMPLES, TABLE_PROJECTS],
                 SOURCES_KEY: {
-                            CFX: SOURCES[CFX].MELT_NOVEL_KEY
+                            CFX: [SOURCES[CFX].MELT_NOVEL_KEY]
                 }
         }
     }

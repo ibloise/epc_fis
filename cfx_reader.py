@@ -3,30 +3,34 @@ import pandas as pd
 import numpy as np
 from constants.local_paths import localPaths
 from constants.constants import cfxData
-from utils.utils import return_files
+from utils.utils import return_files, store_file
 
 #Class??
 
-def read_run_info(file, sheet, file_header):
+
+def read_run_info(file, sheet, file_header, store_files):
     """
     read run info sheet and return two dataframes: info of run and relation of 
     all excels linked to  run
     """
     try:
         run_info = pd.read_excel(file, sheet_name=sheet, header=None, index_col=0
-                ).transpose() 
+                ).transpose()
         excel_relation = run_info.iloc[:,[0]].copy()
         excel_relation[file_header] = os.path.basename(file)
+        if store_files:
+            store_file(file, store_folder=localPaths.STORE_FOLDER_CFX)
         return (run_info.drop_duplicates(), excel_relation)
+
     except Exception as e:
         print(f"Exception in {file}: {e}")
         return (None, None)
 
-def concat_run_info_path(path, sheet_name, file_header):
+def concat_run_info_path(path, sheet_name, file_header, store_files):
     """
     Iterate in path with return files and read all run infos with read_run_info. Concat run_info and excel_relation dataframes
     """
-    df_list = [read_run_info(df, sheet=sheet_name, file_header=file_header) for df in return_files(path) if df != None]
+    df_list = [read_run_info(df, sheet=sheet_name, file_header=file_header, store_files=store_files) for df in return_files(path) if df != None]
     run_info, excel_relation = [pd.concat(df_list).drop_duplicates() for df_list in list(zip(*df_list))]
     return (run_info, excel_relation)
 
@@ -92,6 +96,7 @@ def import_cfx_batch_data(orders, store_files = True,key_type = cfxData.KEY_TYPE
     """
     common_imports = {}
     matrix_imports = {}
+    matrix_imports_fix = {}
     well_samples = pd.DataFrame(columns=[head_run, head_well, head_sample])
     for file,schema in orders.items():
         parameters = (schema[key_datasheet], schema[key_run_info_sheet], head_run)
@@ -103,31 +108,15 @@ def import_cfx_batch_data(orders, store_files = True,key_type = cfxData.KEY_TYPE
         elif schema[key_type] == matrix_format_name:
             data = import_matrix(file, *parameters, index_col=schema[key_id_head], value_name = schema[key_value], engine=engine)
             matrix_imports = append_list_dict(matrix_imports, data, schema[key_regex])
-        if store_files:
-            store_file(file)
+        if store_files: #Habría que hacer un único punto de store files
+            store_file(file, store_folder=localPaths.STORE_FOLDER_CFX)
         #cross data
-        matrix_imports_fix = {}
+        
         for key, value in matrix_imports.items():
             new_values = [pd.merge(data, well_samples, on = [head_run, head_well], how="left") for data in value]
             matrix_imports_fix[key] = new_values
     return (common_imports, matrix_imports_fix)
 
-def store_file(file, store_folder = os.path.join(localPaths.DATA_EXCHANGE_PATH, localPaths.CFX_PATH, localPaths.CFX_HISTORIC)):
-    """
-    Function to store files. Create folder if necessary.
-    """
-    import shutil
-    import filecmp
-    import os
-    if not os.path.exists(store_folder):
-        os.mkdir(store_folder)
-    filename = os.path.basename(file)
-    shutil.copyfile(file, os.path.join(store_folder, filename))
-    if filecmp.cmp(file, os.path.join(store_folder, filename)): #Compare copy file with original file before delete original file.
-        #¿¿Y si lo cambiamos a shutil.move????
-        os.remove(file)
-    else:
-        print(f"Error in {file} management")
 
 def common_import_transform(common_import_dict,common_table_name, primary_key = [cfxData.HEAD_WELL, cfxData.HEAD_FLUOR, cfxData.HEAD_TARGET, cfxData.HEAD_SAMPLE, cfxData.HEAD_RUN], 
                             replace_none = True):
@@ -163,17 +152,24 @@ def concat_dict_dataframes (dataframes_dict, keys_to_concat, primary_key, novel_
             new_dict[key] = data
     return new_dict
 
-def cfx_reader():
+def cfx_reader(store_files = False):
     path = os.path.join(localPaths.DATA_EXCHANGE_PATH, localPaths.CFX_PATH)
-    run_info, excel_relation = concat_run_info_path(path, sheet_name=cfxData.RUN_INFO, file_header=cfxData.HEAD_EXCEL_FILE)
+    run_info, excel_relation = concat_run_info_path(path, sheet_name=cfxData.RUN_INFO, file_header=cfxData.HEAD_EXCEL_FILE, store_files=store_files)
+    return_dfs = {cfxData.TABLE_RUN_INFO : run_info, cfxData.TABLE_EXCELS : excel_relation}
+    
     orders = build_import_orders(cfxData.cfx_files_features, path)
-    data = import_cfx_batch_data(orders, store_files=False)
-    cross_df = common_import_transform(data[0], common_table_name=cfxData.COMMON_TABLE_NAME)
+    data = import_cfx_batch_data(orders, store_files=store_files)
+    #transform the common import table
+    cross_df = common_import_transform(data[0], common_table_name=cfxData.TABLE_COMMON)
+    return_dfs.update(cross_df)
+    
+    #Transform matrix data
     matrix_dict = matrix_import_transform(data[1])
     matrix_dict = concat_dict_dataframes(matrix_dict, [cfxData.MELT_CURVE_DERIVATE, cfxData.MELT_CURVE_RFU],
                                          primary_key = [cfxData.HEAD_WELL, cfxData.HEAD_TEMPERATURE,
                                                cfxData.HEAD_RUN, cfxData.HEAD_SAMPLE],
                                                novel_key=cfxData.MELT_NOVEL_KEY)
-    return (cross_df, matrix_dict)
+    return_dfs.update(matrix_dict)
+    return_dfs = {key : df.drop_duplicates() for key, df in return_dfs.items()}
+    return return_dfs
 
-print(cfx_reader())
