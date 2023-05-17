@@ -5,20 +5,7 @@ import shutil
 import pandas as pd
 import logging
 
-#Set logging
-
-logging.basicConfig(level=logging.DEBUG, filename='cfx.log', 
-                    format='%(asctime)s %(levelname)s %(message)s')
-
-console_handler = logging.StreamHandler()
-console_handler.setLevel(logging.DEBUG)
-
-console_formatter = logging.Formatter('%(asctime)s %(levelname)s: %(message)s')
-console_handler.setFormatter(console_formatter)
-
 logger = logging.getLogger(__name__)
-logger.addHandler(console_handler)
-
 
 def group_cfx_files(cfx_path):
 
