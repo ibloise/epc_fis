@@ -25,6 +25,10 @@ var/
 pip-log.txt
 pip-delete-this-directory.txt
 
+#logs
+
+*.log
+
 #Testing
 
 testing.py
