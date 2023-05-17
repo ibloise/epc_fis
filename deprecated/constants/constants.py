@@ -10,7 +10,6 @@ class cfxData:
     TABLE_MELT = "melt_data"
     TABLE_CYCLE = "cycle_data"
     TABLE_PROJECTS = "projects"
-    TABLE_COMMON = "common_table"
     TABLE_RUN_INFO = "run_info"
     TABLE_EXCELS = "excel_relation"
 
@@ -40,7 +39,6 @@ class cfxData:
     MELT_CURVE_RFU = "Melt Curve RFU Results"
     QUANT_AMP_RESULT = "Quantification Amplification Results"
     QUANT_CQ_RESULT = "Quantification Cq Results"
-    MELT_NOVEL_KEY = "Meltin Derivate and RFU Results"
 
 
     #Headers
@@ -273,6 +271,11 @@ class sqlLoader:
     DEST_KEY = "dest"
     DEST_TABLE_KEY = "dest_table"
     SRC_TABLE_KEY = "src_table"
+    SRC_SCHEM_KEY  = "src_schema"
+    SRC_TABLE_KEY = "src_table"
+    DEST_TABLE_KEY = "dest_table"
+    COL_RENAMER_KEY = "col_renamer"
+
 
     #SCHEMA
     FIS_SCHEMA = "FIS_EPC"
@@ -320,6 +323,7 @@ class sqlLoader:
     TABLE_MELTING = "melting"
     TABLE_CYCLES = "cycles"
     TABLE_PROJECTS = "projects"
+    TABLE_EXCEL = "excel_relation"
 
     #Headers
         #Patients
@@ -379,6 +383,11 @@ class sqlLoader:
 
     #excel
     HEAD_EXCEL_FILE = "excel_filename"
+
+    #Cycles
+
+    HEAD_CYCLE = 'cycle'
+    HEAD_CYCLE_RFU = 'cycle_rfu'
 
     #Tables
 
@@ -448,9 +457,9 @@ class sqlLoader:
                          }
             },
             SQL_COMPOSITE : f"FOREIGN KEY ({HEAD_NHC}) REFERENCES {TABLE_PATIENTS}({HEAD_NHC})",
-            REQUIRE_KEY : [TABLE_PATIENTS],
+            REQUIRE_KEY : TABLE_PATIENTS,
             SOURCES_KEY: {
-                MICROB:[SOURCES[MICROB].SAMPLE_TABLE]
+                MICROB:SOURCES[MICROB].SAMPLE_TABLE
             }
         },
         TABLE_RESULTS : {
@@ -512,7 +521,6 @@ class sqlLoader:
                           HEAD_SAMPLE_VOL : {
                             SQL_STRUCTURE_KEY : "VARCHAR(10)",
                             CFX : SOURCES[CFX].HEAD_SAMPLE_VOL
-        
                           },
                           HEAD_LID_TEMP  : {
                             SQL_STRUCTURE_KEY : "INT",
@@ -542,7 +550,7 @@ class sqlLoader:
             SQL_COMPOSITE : "",
             REQUIRE_KEY : [],
             SOURCES_KEY: {
-                CFX: [SOURCES[CFX].TABLE_PROJECTS]
+                CFX: SOURCES[CFX].TABLE_RUN_INFO
             }
         },
         TABLE_PCR : {
@@ -597,7 +605,7 @@ class sqlLoader:
             f"FOREIGN KEY ({HEAD_RUN}) REFERENCES {TABLE_PROJECTS}({HEAD_FILENAME})"),
             REQUIRE_KEY : [TABLE_SAMPLES, TABLE_PROJECTS],
             SOURCES_KEY: {
-                CFX: [SOURCES[CFX].TABLE_GENERAL]
+                CFX: SOURCES[CFX].TABLE_GENERAL
             },   
         },
         TABLE_MELTING:{
@@ -632,8 +640,55 @@ class sqlLoader:
                                     f"FOREIGN KEY ({HEAD_RUN}) REFERENCES {TABLE_PROJECTS} ({HEAD_FILENAME})"),
                 REQUIRE_KEY: [TABLE_SAMPLES, TABLE_PROJECTS],
                 SOURCES_KEY: {
-                            CFX: [SOURCES[CFX].MELT_NOVEL_KEY]
+                            CFX: SOURCES[CFX].TABLE_MELT
+                }
+        },
+        TABLE_CYCLES:{
+            COLS_KEY: {
+                    HEAD_CYCLE:{
+                        SQL_STRUCTURE_KEY: "INT",
+                        CFX: SOURCES[CFX].HEAD_CYCLE
+                    },
+                    HEAD_WELL:{
+                        SQL_STRUCTURE_KEY: "VARCHAR(5) NOT NULL",
+                        CFX: SOURCES[CFX].HEAD_WELL
+                    },
+                    HEAD_CYCLE_RFU:{
+                        SQL_STRUCTURE_KEY: "INT",
+                        CFX: SOURCES[CFX].HEAD_PIVOT_CYCLE_RFU
+                    },
+                    HEAD_RUN: {
+                        SQL_STRUCTURE_KEY: "VARCHAR(30) NOT NULL",
+                        CFX: SOURCES[CFX].HEAD_RUN
+                    },
+                    HEAD_SAMPLE: {
+                        SQL_STRUCTURE_KEY: "VARCHAR(15) NOT NULL",
+                        CFX: SOURCES[CFX].HEAD_SAMPLE
+                    }
+                },
+                SQL_COMPOSITE: (f"PRIMARY KEY ({HEAD_WELL}, {HEAD_SAMPLE}, {HEAD_RUN}, {HEAD_TEMPERATURE}), "
+                                    f"FOREIGN KEY ({HEAD_SAMPLE}) REFERENCES {TABLE_SAMPLES} ({HEAD_SAMPLE}), "
+                                    f"FOREIGN KEY ({HEAD_RUN}) REFERENCES {TABLE_PROJECTS} ({HEAD_FILENAME})"),
+                REQUIRE_KEY: [TABLE_SAMPLES, TABLE_PROJECTS],
+                SOURCES_KEY: {
+                            CFX: SOURCES[CFX].TABLE_CYCLE
+                }
+        },
+        TABLE_EXCEL:{
+            COLS_KEY: {
+                    HEAD_FILENAME:{
+                        SQL_STRUCTURE_KEY: "VARCHAR(40) NOT NULL",
+                        CFX: SOURCES[CFX].HEAD_FILE_NAME
+                    },
+                    HEAD_EXCEL_FILE:{
+                        SQL_STRUCTURE_KEY: "VARCHAR(100) NOT NULL",
+                        CFX: SOURCES[CFX].HEAD_EXCEL_FILE
+                    }
+                },
+                SQL_COMPOSITE: "",
+                REQUIRE_KEY: [],
+                SOURCES_KEY: {
+                            CFX: SOURCES[CFX].TABLE_EXCELS
                 }
         }
     }
-

@@ -62,6 +62,7 @@ def import_tabular(file, sheet_dataset, sheet_run,  head_run, usecols,engine):
     run = get_run(file, sheet_run, engine)
     data[head_run] = run
     #TEMPORAL: ELIMINAR TRAS LA PRIMERA CARGA
+    print("Ojo!!!!! Sigue el código temporal en cfx_reader.import_tabular")
     data["Target"] = data["Target"].fillna("Screening")
     return data
 
@@ -77,6 +78,7 @@ def import_matrix(file, sheet_dataset, sheet_run,  head_run,index_col,engine, va
     return matrix
 
 def append_list_dict(dictionary, element_to_append, key):
+    print(key)
     if key not in dictionary.keys():
         dictionary[key] = [element_to_append]
     else:
@@ -98,6 +100,7 @@ def import_cfx_batch_data(orders, store_files = True,key_type = cfxData.KEY_TYPE
     matrix_imports = {}
     matrix_imports_fix = {}
     well_samples = pd.DataFrame(columns=[head_run, head_well, head_sample])
+
     for file,schema in orders.items():
         parameters = (schema[key_datasheet], schema[key_run_info_sheet], head_run)
         if schema[key_type] == long_format_name:
@@ -105,6 +108,7 @@ def import_cfx_batch_data(orders, store_files = True,key_type = cfxData.KEY_TYPE
                                       usecols=schema[key_usecols], engine=engine)
             well_samples = pd.concat([well_samples, data[[head_run, head_well, head_sample]]]).drop_duplicates(ignore_index=True)
             common_imports = append_list_dict(common_imports, data, schema[key_regex])
+
         elif schema[key_type] == matrix_format_name:
             data = import_matrix(file, *parameters, index_col=schema[key_id_head], value_name = schema[key_value], engine=engine)
             matrix_imports = append_list_dict(matrix_imports, data, schema[key_regex])
@@ -113,8 +117,9 @@ def import_cfx_batch_data(orders, store_files = True,key_type = cfxData.KEY_TYPE
         #cross data
         
         for key, value in matrix_imports.items():
-            new_values = [pd.merge(data, well_samples, on = [head_run, head_well], how="left") for data in value]
+            new_values = [pd.merge(data, well_samples, on = [head_run, head_well], how="left") for data in value] #Este codigo reconstruye las muestras a partir de las wells
             matrix_imports_fix[key] = new_values
+
     return (common_imports, matrix_imports_fix)
 
 
@@ -159,16 +164,19 @@ def cfx_reader(store_files = False):
     
     orders = build_import_orders(cfxData.cfx_files_features, path)
     data = import_cfx_batch_data(orders, store_files=store_files)
+
     #transform the common import table
-    cross_df = common_import_transform(data[0], common_table_name=cfxData.TABLE_COMMON)
+    cross_df = common_import_transform(data[0], common_table_name=cfxData.TABLE_GENERAL)
     return_dfs.update(cross_df)
     
     #Transform matrix data
+
     matrix_dict = matrix_import_transform(data[1])
     matrix_dict = concat_dict_dataframes(matrix_dict, [cfxData.MELT_CURVE_DERIVATE, cfxData.MELT_CURVE_RFU],
                                          primary_key = [cfxData.HEAD_WELL, cfxData.HEAD_TEMPERATURE,
                                                cfxData.HEAD_RUN, cfxData.HEAD_SAMPLE],
-                                               novel_key=cfxData.MELT_NOVEL_KEY)
+                                               novel_key=cfxData.TABLE_MELT)
+    print(matrix_dict.keys())
     return_dfs.update(matrix_dict)
     return_dfs = {key : df.drop_duplicates() for key, df in return_dfs.items()}
     return return_dfs

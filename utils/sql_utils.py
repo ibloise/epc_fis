@@ -24,7 +24,7 @@ def SQL_connect(host = 'localhost', port = 3306, software = "mysql"):
     engine = create_engine(db_data, encoding='latin1')
     cursor = connection.cursor(pymysql.cursors.DictCursor)
 
-    return (db_data, engine, cursor)
+    return (db_data, engine, cursor, connection)
 
 def check_schema(schema, cursor):
     cursor.execute("SHOW DATABASES")
