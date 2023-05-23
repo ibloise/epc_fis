@@ -6,7 +6,7 @@ from sqlalchemy import create_engine
 
 logger = logging.getLogger(__name__)
 
-class SQL_connection():
+class SqlConnection():
 
     MSG_CONNECT= 'Conectando a base de datos'
 
@@ -18,8 +18,8 @@ class SQL_connection():
 
     MSG_CON_ERROR = 'No es posible conectar a base de datos'
 
-    def __init__(self, host = 'localhost', port = 3306, software='mysql'):
-
+    def __init__(self, schema, host = 'localhost', port = 3306, software='mysql'):
+        self.schema = schema
         self.host = host
         self.port = port
         self.software = software
@@ -34,12 +34,15 @@ class SQL_connection():
 
         self.anon_password = '*'*len(self.password)
 
+        self.SQL_connect()
+
     def SQL_connect(self):
         try:
             connection = pymysql.connect(host=self.host,
                     user=self.user,
                     password=self.password,
-                    port = self.port
+                    port = self.port,
+                    db = self.schema
                 )
             logger.info(self.MSG_CON_SUCCESS)
         except Exception as e:
@@ -47,10 +50,13 @@ class SQL_connection():
             print(logger.error(e))
             exit()
 
-        db_data = f'{self.software.lower()}+pymysql://{self.user}:{self.password}@{self.host}:{self.port}'
+        db_data = f'{self.software.lower()}+pymysql://{self.user}:{self.password}@{self.host}:{self.port}/{self.schema}'
         db_data_msg = re.sub(self.password, self.anon_password, db_data)
 
         logger.debug(f'Database create engine: {db_data_msg}')
         
         self.engine = create_engine(db_data, encoding='latin1')
         self.cursor = connection.cursor(pymysql.cursors.DictCursor)
+
+    def launch_table(self, dataframe, dest_table):
+        dataframe.to_sql(dest_table, self.engine, if_exists = 'append', index = False)

@@ -104,6 +104,8 @@ class CfxRun:
         self.head_cycle = 'Cycle'
         self.head_cycle_rfu = 'cycle_rfu'
 
+        self._core_cols = [self.head_well, self.head_sample]
+
 
     def _get_run_info_param(self, dataframe, parameter ,index = 1):
         return dataframe.loc[parameter, index]
@@ -140,6 +142,7 @@ class CfxRun:
         logger.info(f'Reading {file}')
         try:
             data = pd.read_excel(os.path.join(self.run_path, file), usecols= lambda x: 'Unnamed' not in x)
+            logging.debug(f'data readed: \n {data.to_string()}')
             data[self.head_run] = self.run_folder
             data[self.head_origin] = os.path.basename(file)
             logger.info(f'{file} readed!')
@@ -169,12 +172,19 @@ class CfxRun:
         '''
         Read run folder
         '''
+        logging.warning('Arreglo de los screening perdidos activo! Desactivar tras primera carga')
         self.endpoint = self._read_file(self._get_file(self._pattern_endpoint))
+        logging.debug(self.endpoint.to_string())
         self.melt_deriv = self._read_file(self._get_file(self._pattern_melt_curve_deriv))
         self.melt_peak = self._read_file(self._get_file(self._pattern_melt_curve_peaks))
+        #fix
+        self.melt_peak[self.head_target] = self.melt_peak[self.head_target].fillna('Screening')
+
         self.melt_rfu = self._read_file(self._get_file(self._pattern_melt_curve_rfu))
         self.quant_amp = self._read_file(self._get_file(self._pattern_quantification_amp_results))
         self.quant_cq = self._read_file(self._get_file(self._pattern_quantification_cq_results))
+        #fix
+        self.quant_cq[self.head_target] = self.quant_cq[self.head_target].fillna('Screening')
 
         self.tabulars = [self.endpoint, self.melt_peak, self.quant_cq]
 
@@ -188,17 +198,9 @@ class CfxRun:
         '''
         Create a core tab necessary for create general table
         '''
-        self._core_cols = [self.head_well, self.head_fluor, self.head_target, self.head_sample]
-        self._tab_core = pd.DataFrame()
 
-        for table in self.tabulars:
-            logger.debug(f'Appending table: \n {table}')
-            if self._tab_core.empty:
-                self._tab_core = table[self._core_cols]
-                logger.debug(f'Create _tab_core: \n {self._tab_core}')
-            else:
-                self._tab_core = pd.concat([self._tab_core, table[self._core_cols]])
-                logger.debug(f'Updated _tab_core: \n {self._tab_core}')
+        logger.warning('Create tab core method is deprecated!')
+        self._tab_core = self.quant_cq[self._core_cols]
         self._tab_core = self._tab_core.drop_duplicates()
 
     def _check_reads(self, required):
@@ -221,10 +223,12 @@ class CfxRun:
         self._check_reads(self.tabulars)
 
         logger.info('Creating general table')
-        self.general_table = self._tab_core.copy()
+
+        quant_cq_cols = self._create_subset(self._core_cols, [self.head_cq, self.head_origin])
+        self.general_table = self.quant_cq[quant_cq_cols]
+
         #LOad End Points
         end_point_cols = self._create_subset(self._core_cols, [self.head_end_rfu, self.head_origin])
-
         self.general_table = self.general_table.merge(
             self.endpoint[end_point_cols],
             on = self._core_cols,

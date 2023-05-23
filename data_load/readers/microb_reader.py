@@ -1,17 +1,12 @@
-from renamers import SIL_renamer
+from readers.renamers import SIL_renamer
 import pandas as pd
 import numpy as np
 import os
 import logging
+import shutil
+import sys
 
-
-
-
-
-#ToDO:
-
-# Crear lista de columnas para las dos tablas restantes (microorganismos y resultados)
-# Programar el split
+logger = logging.getLogger(__name__)
 
 class MicrobReader(SIL_renamer):
     def __init__(self, path):
@@ -21,6 +16,11 @@ class MicrobReader(SIL_renamer):
         self.path = path
 
         logger.info(f'Reading path: {self.path}')
+
+        check_dir = [file for file in os.listdir(self.path) if os.path.isfile(os.path.join(self.path, file))]
+        if not check_dir:
+            logging.info('No files to read')
+            sys.exit()
         #attributes
         self._delim = '|'
         #headers
@@ -234,3 +234,13 @@ class MicrobReader(SIL_renamer):
         self.split_data()
         self.renamer_data()
         logger.info('Pipeline finished!')
+
+    def storage_files(self, storage_folder):
+        storage_folder = os.path.join(self.path, storage_folder)
+        for file in self.yield_files():
+            try:
+                shutil.move(file, storage_folder)
+                logging.info(f'File {file} moved!')
+            except Exception as e:
+                logging.error(f'Cannot move {file}')
+                logging.error(e)
