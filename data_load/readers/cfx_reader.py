@@ -309,7 +309,7 @@ class CfxRun:
     def storage_run(self, storage_folder, storage_in_root = True):
         if storage_in_root:
             storage_folder = os.path.join(self.root, storage_folder)
-        logger.info(f'Movin {self.run_path} to {storage_folder}')
+        logger.info(f'Moving {self.run_path} to {storage_folder}')
 
         try:
             shutil.move(self.run_path, storage_folder)
@@ -326,8 +326,3 @@ class CfxRun:
         self.read_files()
         self.create_general_table()
         self.build_matrixes()
-
-
-
-
-

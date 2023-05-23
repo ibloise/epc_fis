@@ -1,6 +1,5 @@
 import getpass
 import pymysql
-from constants.constants import sqlLoader #Habrá que separar esta clase
 from sqlalchemy import create_engine
 
 def SQL_connect(host = 'localhost', port = 3306, software = "mysql"):

@@ -63,10 +63,3 @@ class SIL_renamer:
             return None
         
         return {old_element: new_element for old_element, new_element in zip(origin_cols, new_cols)}
-
-
-    
-
-
-
-

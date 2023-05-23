@@ -5,17 +5,7 @@ import os
 import logging
 
 
-logging.basicConfig(level=logging.DEBUG, filename='testing_microb.log', 
-                    format='%(asctime)s %(levelname)s %(message)s')
 
-console_handler = logging.StreamHandler()
-console_handler.setLevel(logging.DEBUG)
-
-console_formatter = logging.Formatter('%(asctime)s %(levelname)s: %(message)s')
-console_handler.setFormatter(console_formatter)
-
-logger = logging.getLogger()
-logger.addHandler(console_handler)
 
 
 #ToDO:
@@ -244,9 +234,3 @@ class MicrobReader(SIL_renamer):
         self.split_data()
         self.renamer_data()
         logger.info('Pipeline finished!')
-
-
-
-
-
-        
