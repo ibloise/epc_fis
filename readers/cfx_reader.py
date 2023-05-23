@@ -5,6 +5,7 @@ import shutil
 import pandas as pd
 import logging
 
+######QUEDA CAMBIAR LOS NA A 0!!
 logger = logging.getLogger(__name__)
 
 def group_cfx_files(cfx_path):
