@@ -143,7 +143,7 @@ class CfxRun:
         try:
             data = pd.read_excel(os.path.join(self.run_path, file), usecols= lambda x: 'Unnamed' not in x)
             logging.debug(f'data readed: \n {data.to_string()}')
-            data[self.head_run] = self.run_folder
+            data[self.head_run] = os.path.basename(self.run_folder)
             data[self.head_origin] = os.path.basename(file)
             logger.info(f'{file} readed!')
             return data
@@ -177,9 +177,6 @@ class CfxRun:
         logging.debug(self.endpoint.to_string())
         self.melt_deriv = self._read_file(self._get_file(self._pattern_melt_curve_deriv))
         self.melt_peak = self._read_file(self._get_file(self._pattern_melt_curve_peaks))
-        #fix
-        self.melt_peak[self.head_target] = self.melt_peak[self.head_target].fillna('Screening')
-
         self.melt_rfu = self._read_file(self._get_file(self._pattern_melt_curve_rfu))
         self.quant_amp = self._read_file(self._get_file(self._pattern_quantification_amp_results))
         self.quant_cq = self._read_file(self._get_file(self._pattern_quantification_cq_results))
@@ -199,7 +196,6 @@ class CfxRun:
         Create a core tab necessary for create general table
         '''
 
-        logger.warning('Create tab core method is deprecated!')
         self._tab_core = self.quant_cq[self._core_cols]
         self._tab_core = self._tab_core.drop_duplicates()
 
@@ -224,7 +220,7 @@ class CfxRun:
 
         logger.info('Creating general table')
 
-        quant_cq_cols = self._create_subset(self._core_cols, [self.head_cq, self.head_origin])
+        quant_cq_cols = self._create_subset(self._core_cols, [self.head_target, self.head_fluor ,self.head_cq, self.head_origin])
         self.general_table = self.quant_cq[quant_cq_cols]
 
         #LOad End Points
@@ -249,18 +245,18 @@ class CfxRun:
         
         #Load quant cq
 
-        quant_cq_cols = self._create_subset(self._core_cols, [self.head_cq, self.head_origin])
+        #quant_cq_cols = self._create_subset(self._core_cols, [self.head_cq, self.head_origin])
 
-        self.general_table = self.general_table.merge(
-            self.quant_cq[quant_cq_cols],
-            on=self._core_cols,
-            how='left',
-            suffixes=['','_cq']
-        )
+        #self.general_table = self.general_table.merge(
+            #self.quant_cq[quant_cq_cols],
+            #on=self._core_cols,
+            #how='left',
+            #suffixes=['','_cq']
+        #)
 
         self.general_table = self.general_table.rename(columns=self._clean_names)
 
-        logger.info(f'General table created!: \n {self.general_table.to_string()}')
+        logger.debug(f'General table created!: \n {self.general_table.to_string()}')
 
     def unpivot_matrix(self, matrix, id_vars, value_name):
         '''
@@ -300,7 +296,7 @@ class CfxRun:
         
         self.unpivot_melt_data = self.assign_samples(unpivot_melt_data)
         self.unpivot_melt_data = self.unpivot_melt_data.rename(columns=self._clean_names)
-        logger.info(f'Melting matrix created!: \n {self.unpivot_melt_data.to_string()}')
+        logger.debug(f'Melting matrix created!: \n {self.unpivot_melt_data.to_string()}')
         #Unpivot the cycle data
         unpivot_ct = self.unpivot_matrix(self.quant_amp,
                                         id_vars=[self.head_cycle, self.head_origin, self.head_run],
@@ -308,7 +304,7 @@ class CfxRun:
         
         self.unpivot_ct = self.assign_samples(unpivot_ct)
         self.unpivot_ct = self.unpivot_ct.rename(columns=self._clean_names)
-        logger.info(f'Cycle matrix created!: \n {self.unpivot_ct.to_string()}')
+        logger.debug(f'Cycle matrix created!: \n {self.unpivot_ct.to_string()}')
 
     def storage_run(self, storage_folder, storage_in_root = True):
         if storage_in_root:

@@ -1,11 +1,14 @@
+
+
 import logging
 import os
+import sys
 from datetime import datetime
-from sql_tools.sql_tools import SqlConnection
-from constants.load_constants import SqlTables
-from constants.local_paths import LocalPaths
-from readers.cfx_reader import group_cfx_files, CfxRun
-from readers.microb_reader import MicrobReader
+from data_load.sql_tools.sql_tools import SqlConnection
+from data_load.constants.load_constants import SqlTables
+from data_load.constants.local_paths import LocalPaths
+from data_load.readers.cfx_reader import group_cfx_files, CfxRun
+from data_load.readers.microb_reader import MicrobReader
 import argparse
 #Set logger
 
@@ -52,13 +55,15 @@ def common_config(test):
     return sql_tables, sql_connection, local_paths
 
 def cfx_main():
+    print(sys.version)
     args = arg_parser()
     sql_tables, sql_connection, local_paths =  common_config(args.test)
     logger = set_logger(local_paths.log_paths, args.verbose)
     logger.warning('Test mode activate!')
     group_cfx_files(local_paths.cfx_path)
     cfx_runs = [os.path.join(local_paths.cfx_path, folder
-                             ) for folder in os.listdir(local_paths.cfx_path) if os.path.isdir(os.path.join(local_paths.cfx_path, folder))]
+                             ) for folder in os.listdir(local_paths.cfx_path) if os.path.isdir(os.path.join(local_paths.cfx_path, folder)) and
+                             folder != local_paths.historic]
 
     for run in cfx_runs:
         logger.info(f'Reading {run}')
@@ -98,3 +103,6 @@ def microb_main():
         microb_reader.storage_files(local_paths.microb_historic)
     except Exception as e:
         logger.error(e)
+
+if __name__ == '__main__':
+    microb_main()

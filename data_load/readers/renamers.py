@@ -11,6 +11,7 @@ class SIL_renamer:
 
     #patients
     nhc: str = 'nhc'
+    afi: str = 'afi'
     name: str = 'name'
     last_name_1: str = 'last_name_1'
     last_name_2: str = 'last_name_2'
@@ -45,7 +46,7 @@ class SIL_renamer:
 
 
     def create_lists(self): #This method must be called in init method of daughter class
-        self.cols_patients =  [self.nhc, self.name, self.last_name_1, self.last_name_2, self.sex, self.birth_date]
+        self.cols_patients =  [self.nhc, self.afi, self.name, self.last_name_1, self.last_name_2, self.sex, self.birth_date]
 
         self.cols_samples = [self.sample_name, self.entry_date, self.cod_origin, self.des_origin, 
                        self.cod_serv,self.des_serv ,self.cod_room, self.cod_sample, self.des_sample,

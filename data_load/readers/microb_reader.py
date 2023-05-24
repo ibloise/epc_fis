@@ -1,4 +1,4 @@
-from readers.renamers import SIL_renamer
+from data_load.readers.renamers import SIL_renamer
 import pandas as pd
 import numpy as np
 import os
@@ -36,6 +36,7 @@ class MicrobReader(SIL_renamer):
         self._cols_patients = [
             self._head_nhc,
             self._head_afi,
+            self._head_name,
             self._head_surna_1,
             self._head_surna_2,
             self._head_birthd,

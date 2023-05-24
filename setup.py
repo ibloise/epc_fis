@@ -2,7 +2,7 @@ from setuptools import find_packages
 from setuptools import setup
 
 setup(
-    name = 'Data exchanger',
+    name = 'FIS_Data_load',
     version = '0.1.0',
     author = 'Iván Bloise Sánchez',
     description= 'Exchange data with FIS database',
