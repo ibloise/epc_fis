@@ -55,7 +55,6 @@ def common_config(test):
     return sql_tables, sql_connection, local_paths
 
 def cfx_main():
-    print(sys.version)
     args = arg_parser()
     sql_tables, sql_connection, local_paths =  common_config(args.test)
     logger = set_logger(local_paths.log_paths, args.verbose)

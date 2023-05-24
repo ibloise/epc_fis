@@ -51,13 +51,13 @@ class SqlConnection():
             exit()
 
         db_data = f'{self.software.lower()}+pymysql://{self.user}:{self.password}@{self.host}:{self.port}/{self.schema}'
-        print(db_data)
         db_data_msg = re.sub(self.password, self.anon_password, db_data)
 
         logger.debug(f'Database create engine: {db_data_msg}')
         
         self.engine = create_engine(db_data)
+        self.connection = connection
         self.cursor = connection.cursor(pymysql.cursors.DictCursor)
 
-    def launch_table(self, dataframe, dest_table):
-        dataframe.to_sql(dest_table, self.engine, if_exists = 'append', index = False)
+    def launch_table(self, dataframe, dest_table, action = 'append'):
+        dataframe.to_sql(dest_table, self.engine, if_exists = action, index = False)
