@@ -110,7 +110,12 @@ class MicrobReader(SIL_renamer):
             self._value_cpc,
             self._value_atb
         ]
+
+        #Dates
+
+        self._microb_date_format = '%d/%m/%Y'
         #Concat files
+
         self.data = self.concat_files()
 
         #init list in father class
@@ -191,7 +196,16 @@ class MicrobReader(SIL_renamer):
         logger.info('Splitting data')
         self.patients = self.data[self._cols_patients].drop_duplicates()
 
+        #transform date
+
+        self.patients[self._head_birthd] = pd.to_datetime(self.patients[self._head_birthd],format = self._microb_date_format)
+
         self.samples = self.data[self._cols_samples].drop_duplicates()
+
+        #transform date:
+
+        self.samples[self._head_entry_date] = pd.to_datetime(self.samples[self._head_entry_date], format = self._microb_date_format)
+        self.samples[self._head_result_date] = pd.to_datetime(self.samples[self._head_result_date], format = self._microb_date_format)
 
         self.gfhs = self.data[[self._head_cod_origin, self._head_des_origin,self._head_cod_serv, self._head_des_serv]].drop_duplicates()
 

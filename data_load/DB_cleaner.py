@@ -59,6 +59,8 @@ def main():
 
     sql_con = SqlConnection(schema)
 
+    #ToDO: hay que pasar las operaciones de extracción de tablas a SqlConnection o a alguna clase hija
+
     sql_con.cursor.execute('SHOW TABLES')
 
     sql_tables = sql_con.cursor.fetchall()
