@@ -175,7 +175,7 @@ class CfxRun:
         '''
         Read run folder
         '''
-        logging.warning('Arreglo de los screening perdidos activo! Desactivar tras primera carga')
+        
         self.endpoint = self._read_file(self._get_file(self._pattern_endpoint))
         logging.debug(self.endpoint.to_string())
         self.melt_deriv = self._read_file(self._get_file(self._pattern_melt_curve_deriv))
@@ -184,7 +184,8 @@ class CfxRun:
         self.quant_amp = self._read_file(self._get_file(self._pattern_quantification_amp_results))
         self.quant_cq = self._read_file(self._get_file(self._pattern_quantification_cq_results))
         #fix
-        self.quant_cq[self.head_target] = self.quant_cq[self.head_target].fillna('Screening')
+        #logging.warning('Arreglo de los screening perdidos activo! Desactivar tras primera carga')
+        #self.quant_cq[self.head_target] = self.quant_cq[self.head_target].fillna('Screening')
 
         self.tabulars = [self.endpoint, self.melt_peak, self.quant_cq]
 
@@ -259,6 +260,8 @@ class CfxRun:
 
         self.general_table = self.general_table.rename(columns=self._clean_names)
         self.general_table[self.head_run] = self.run_id
+
+        self.general_table = self.general_table.replace({'None': None})
 
         logger.debug(f'General table created!: \n {self.general_table.to_string()}')
 
