@@ -2,7 +2,6 @@ from dataclasses import dataclass
 
 
 @dataclass
-
 class SqlTables():
 
     test_schema: str = 'fis_data_test'
@@ -20,5 +19,20 @@ class SqlTables():
     sil_patients: str = 'patients'
     sil_samples: str = 'samples'
     sil_results: str= 'results'
-    sil_obs: str = 'obs' 
+    sil_obs: str = 'obs'
+
+    #pcr_tables
+
+    #Headers
+    sample: str='sample'
+    sample_name: str='sample_name'
+    cod_mo: str='cod_microorganism'
+    obs: str = 'obs'
+    cq: str = 'cq'
+    target: str='target'
+    run: str='run'
+
+    #key values
+
+    val_screening = 'Screening'
 
