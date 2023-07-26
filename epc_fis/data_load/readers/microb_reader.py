@@ -1,4 +1,4 @@
-from data_load.readers.renamers import SIL_renamer
+from .renamers import SIL_renamer
 import pandas as pd
 import numpy as np
 import os

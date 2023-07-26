@@ -1,13 +1,12 @@
 import pandas as pd
-import numpy as np
 import argparse
 import sys
 from datetime import datetime
 from openpyxl import Workbook
 from openpyxl.styles import PatternFill
 from openpyxl.utils.dataframe import dataframe_to_rows
-from utils.sql_tools import SqlConnection
-from utils.constants.load_constants import SqlTables
+from ..utils.sql_tools import SqlConnection
+from ..utils.constants.load_constants import SqlTables
 
 #Limpiar hardcoding!!!!
 

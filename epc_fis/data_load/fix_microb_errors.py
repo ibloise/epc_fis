@@ -3,11 +3,8 @@ import logging
 import argparse
 import os
 from datetime import datetime
-from utils.constants.local_paths import LocalPaths
-from utils.constants.load_constants import SqlTables
-from utils.sql_tools import SqlConnection
+from ..utils.sql_tools import SqlConnection
 #from data_load.sql_tools import sql_tools
-
 
 
 def arg_parser():

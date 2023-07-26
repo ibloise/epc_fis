@@ -1,6 +1,5 @@
 import pandas as pd
-import numpy as np
-from utils.sql_tools import SqlConnection
+from ..utils.sql_tools import SqlConnection
 
 #Limpiar hardcoding!!!!
 sql_connect = SqlConnection('fis_data_temp')

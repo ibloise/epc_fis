@@ -1,11 +1,9 @@
 import pandas as pd
 import sys
 import numpy as np
-from scipy.signal import argrelmin, savgol_filter
+from scipy.signal import argrelmin
 import matplotlib.pyplot as plt
-from utils.constants.load_constants import SqlTables
-
-
+from ..utils.constants.load_constants import SqlTables
 
 
 class StudySample():

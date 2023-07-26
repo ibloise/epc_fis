@@ -1,12 +1,11 @@
 import logging
 import os
-import sys
 from datetime import datetime
-from utils.sql_tools import SqlConnection
-from utils.constants.load_constants import SqlTables
-from utils.constants.local_paths import LocalPaths
-from data_load.readers.cfx_reader import group_cfx_files, CfxRun
-from data_load.readers.microb_reader import MicrobReader
+from ..utils.sql_tools import SqlConnection
+from ..utils.constants.load_constants import SqlTables
+from ..utils.constants.local_paths import LocalPaths
+from  .readers.cfx_reader import group_cfx_files, CfxRun
+from  .readers.microb_reader import MicrobReader
 import argparse
 #Set logger
 

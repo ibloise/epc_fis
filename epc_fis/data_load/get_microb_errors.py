@@ -1,8 +1,9 @@
 import pandas as pd
 from datetime import datetime
-from utils.sql_tools import SqlConnection
-from data_load.readers.renamers import SIL_renamer
-from utils.constants.load_constants import SqlTables
+from ..utils.sql_tools import SqlConnection
+from .readers.renamers import SIL_renamer
+from ..utils.constants.load_constants import SqlTables
+
 
 def main():
 
@@ -23,7 +24,7 @@ def main():
     cods_sentence = ','.join(f'"{value}"' for value in cods)
 
     cods_microorg = pd.read_sql(f'SELECT {sil_metadata.cod_mo},  {sil_metadata.des_mo} from {sql_tables.sil_results} WHERE {sil_metadata.cod_mo} in ({cods_sentence})',
-                            sql_connect.engine).drop_duplicates()
+                                sql_connect.engine).drop_duplicates()
 
     dup_df = dup_df.merge(cods_microorg, how='left', on=sil_metadata.cod_mo)
 
