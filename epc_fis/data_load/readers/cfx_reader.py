@@ -41,7 +41,12 @@ class CfxRun:
         #Paths
         self.root = root
         self.run_folder = run_folder
+        self.run_id = os.path.basename(self.run_folder)
         self.run_path = os.path.join(root, run_folder)
+
+        #Date formats:
+
+        self._run_info_date_format = '%m/%d/%Y %H:%M:%S %Z'
 
             #Run information attributes
         #Sheet
@@ -121,19 +126,17 @@ class CfxRun:
 
         run_info.to_excel(f'{os.path.join(self.run_path, self._RUN_INFO_SHEET)}.xlsx')
         
-        #set run infor parameters ?¿
-        #self.run_file_name = self._get_run_info_param(run_info, self._RUN_FILE_NAME)
-        #self.user = self._get_run_info_param(run_info, self._RUN_ADMIN)
-        #self.run_start = self._get_run_info_param(run_info, self._RUN_STARTED)
-        #self.run_ended = self._get_run_info_param(run_info, self._RUN_ENDED)
-        #self.sample_vol = self._get_run_info_param(run_info, self._RUN_SAMPLE_VOL)
-        #self.lid_temp = self._get_run_info_param(run_info, self._RUN_LID_TEMP)
-        #self.protocol = self._get_run_info_param(run_info, self._RUN_PROTOCOL_FILE)
-        #self.plate = self._get_run_info_param(run_info, self._RUN_PLATE_FILE)
-        #self.base_serial_number = self._get_run_info_param(run_info, self._RUN_BASE_SERIAL)
-        #self.optical_serial_number = self._get_run_info_param(run_info, self._RUN_OPTICAL_SERIAL)
-        #self.manager_version = self._get_run_info_param(run_info, self._RUN_SOFTWARE_VERSION)
-        self.run_info = run_info.transpose().rename(columns=self._clean_names)
+
+        self.run_info = run_info.transpose()
+
+        #date to date format:
+
+        self.run_info[self._RUN_STARTED] = pd.to_datetime(self.run_info[self._RUN_STARTED], format=self._run_info_date_format)
+        self.run_info[self._RUN_ENDED] = pd.to_datetime(self.run_info[self._RUN_ENDED], format=self._run_info_date_format)
+        self.run_info[self.head_run] = self.run_id
+
+        self.run_info = self.run_info.rename(columns=self._clean_names)
+
 
     def read_config(config_file):
         pass
@@ -172,7 +175,7 @@ class CfxRun:
         '''
         Read run folder
         '''
-        logging.warning('Arreglo de los screening perdidos activo! Desactivar tras primera carga')
+        
         self.endpoint = self._read_file(self._get_file(self._pattern_endpoint))
         logging.debug(self.endpoint.to_string())
         self.melt_deriv = self._read_file(self._get_file(self._pattern_melt_curve_deriv))
@@ -181,7 +184,8 @@ class CfxRun:
         self.quant_amp = self._read_file(self._get_file(self._pattern_quantification_amp_results))
         self.quant_cq = self._read_file(self._get_file(self._pattern_quantification_cq_results))
         #fix
-        self.quant_cq[self.head_target] = self.quant_cq[self.head_target].fillna('Screening')
+        #logging.warning('Arreglo de los screening perdidos activo! Desactivar tras primera carga')
+        #self.quant_cq[self.head_target] = self.quant_cq[self.head_target].fillna('Screening')
 
         self.tabulars = [self.endpoint, self.melt_peak, self.quant_cq]
 
@@ -255,6 +259,9 @@ class CfxRun:
         #)
 
         self.general_table = self.general_table.rename(columns=self._clean_names)
+        self.general_table[self.head_run] = self.run_id
+
+        self.general_table = self.general_table.replace({'None': None})
 
         logger.debug(f'General table created!: \n {self.general_table.to_string()}')
 
@@ -296,6 +303,8 @@ class CfxRun:
         
         self.unpivot_melt_data = self.assign_samples(unpivot_melt_data)
         self.unpivot_melt_data = self.unpivot_melt_data.rename(columns=self._clean_names)
+        self.unpivot_melt_data[self.head_run] = self.run_id
+        
         logger.debug(f'Melting matrix created!: \n {self.unpivot_melt_data.to_string()}')
         #Unpivot the cycle data
         unpivot_ct = self.unpivot_matrix(self.quant_amp,
@@ -304,6 +313,8 @@ class CfxRun:
         
         self.unpivot_ct = self.assign_samples(unpivot_ct)
         self.unpivot_ct = self.unpivot_ct.rename(columns=self._clean_names)
+        self.unpivot_ct[self.head_run] = self.run_id
+
         logger.debug(f'Cycle matrix created!: \n {self.unpivot_ct.to_string()}')
 
     def storage_run(self, storage_folder, storage_in_root = True):
