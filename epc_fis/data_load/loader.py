@@ -1,12 +1,10 @@
-
-
 import logging
 import os
 import sys
 from datetime import datetime
-from data_load.sql_tools.sql_tools import SqlConnection
-from data_load.constants.load_constants import SqlTables
-from data_load.constants.local_paths import LocalPaths
+from utils.sql_tools import SqlConnection
+from utils.constants.load_constants import SqlTables
+from utils.constants.local_paths import LocalPaths
 from data_load.readers.cfx_reader import group_cfx_files, CfxRun
 from data_load.readers.microb_reader import MicrobReader
 import argparse
@@ -58,7 +56,7 @@ def cfx_main():
     args = arg_parser()
     sql_tables, sql_connection, local_paths =  common_config(args.test)
     logger = set_logger(local_paths.log_paths, args.verbose)
-    logger.warning('Test mode activate!')
+    #logger.warning('Test mode activate!')
     group_cfx_files(local_paths.cfx_path)
     cfx_runs = [os.path.join(local_paths.cfx_path, folder
                              ) for folder in os.listdir(local_paths.cfx_path) if os.path.isdir(os.path.join(local_paths.cfx_path, folder)) and

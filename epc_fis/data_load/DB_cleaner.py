@@ -3,9 +3,9 @@ import logging
 import argparse
 import os
 from datetime import datetime
-from data_load.constants.local_paths import LocalPaths
-from data_load.constants.load_constants import SqlTables
-from data_load.sql_tools.sql_tools import SqlConnection
+from utils.constants.local_paths import LocalPaths
+from utils.constants.load_constants import SqlTables
+from utils.sql_tools import SqlConnection
 #from data_load.sql_tools import sql_tools
 
 

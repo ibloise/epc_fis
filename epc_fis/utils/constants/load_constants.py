@@ -31,6 +31,10 @@ class SqlTables():
     cq: str = 'cq'
     target: str='target'
     run: str='run'
+    well: str ='well'
+    melt_derivate: str='melt_derivative_value'
+    temperature: str='temperature'
+    melt_rfu: str='melt_rfu_value'
 
     #key values
 

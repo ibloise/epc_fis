@@ -1,8 +1,8 @@
 import pandas as pd
 from datetime import datetime
-from data_load.sql_tools.sql_tools import SqlConnection
+from utils.sql_tools import SqlConnection
 from data_load.readers.renamers import SIL_renamer
-from data_load.constants.load_constants import SqlTables
+from utils.constants.load_constants import SqlTables
 
 def main():
 
@@ -27,5 +27,5 @@ def main():
 
     dup_df = dup_df.merge(cods_microorg, how='left', on=sil_metadata.cod_mo)
 
-    dup_df.to_excel(f'dups_microb_data_{now}.xlsx')
+    dup_df.to_excel(f'dups_microb_data_{now}.xlsx', index=False)
     print('Excel writed!')

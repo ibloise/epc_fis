@@ -6,8 +6,8 @@ from datetime import datetime
 from openpyxl import Workbook
 from openpyxl.styles import PatternFill
 from openpyxl.utils.dataframe import dataframe_to_rows
-from data_load.sql_tools.sql_tools import SqlConnection
-from data_load.constants.load_constants import SqlTables
+from utils.sql_tools import SqlConnection
+from utils.constants.load_constants import SqlTables
 
 #Limpiar hardcoding!!!!
 
@@ -15,9 +15,6 @@ def arg_parser():
     parser = argparse.ArgumentParser(description="Chequeo de discrepancias en PCRs")
     parser.add_argument('--run', help = 'Nombre del Run que se quiere comprobar',
                         required=True)
-    parser.add_argument('-o', '--output', help='Nombre del archivo de salida en excel. NO AÑADIR LA EXTENSIÓN',
-                        default='resultados')
-
     args = parser.parse_args()
     return args
 
@@ -90,6 +87,7 @@ def main():
 
     #Arreglamos el cross_df:
 
+    cross_df = cross_df.drop_duplicates()
     cross_df[obs_list] = cross_df[obs_list].fillna(neg)
 
     cross_df = cross_df.rename(columns={sql_constants.cod_mo : "culture"})
@@ -112,12 +110,13 @@ def main():
     cond_data_missing = check_file['_merge'] == 'left_only'
 
     target_result = check_file[pcr_col_levels].apply(
-    lambda x: any(x ==0), axis=1
+    lambda x: any(x == 0), axis=1
     )
 
-    cond_data_disc = target_result & (check_file['carbapenemase'] == neg)
+    cond_data_disc = target_result & (check_file['carbapenemase'] == pos)
 
     check_file = check_file.drop('_merge', axis=1)
+    check_file['disc'] = cond_data_disc
 
     print('Escribiendo archivo excel!')
     wb = Workbook()
@@ -138,5 +137,5 @@ def main():
             for cell in ws[i]:
                 cell.fill = PatternFill(start_color='00FF0000', fill_type='solid') #Rojo
 
-    wb.save(f'{args.output}_{now}.xlsx')
+    wb.save(f'consulta_run-{run}_{now}.xlsx')
     print('Proceso finalizado!')
