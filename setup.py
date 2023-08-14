@@ -13,7 +13,8 @@ setup(
     'import_microb=epc_fis.data_load.loader:microb_main',
     'clean_duplicates=epc_fis.data_load.DB_cleaner:main',
     'get_microb_errors=epc_fis.data_load.get_microb_errors:main',
-    'check_pcr=epc_fis.data_load.checker:main'
+    'check_pcr=epc_fis.data_load.checker:main',
+    'calculate_params=epc_fis.data_load.calculate_parameters:main'
     ]
     }
 )

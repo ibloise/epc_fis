@@ -19,7 +19,7 @@ def arg_parser():
 
 
 def main():
-    now = datetime.now().strftime('%Y-%m-%d_%H:%M:%S')
+    now = datetime.now().strftime('%Y-%m-%d_%H-%M-%S')
     args = arg_parser()
     run = args.run
     sql_constants = SqlTables()
