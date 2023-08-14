@@ -18,7 +18,7 @@ def group_cfx_files(cfx_path):
     #Create dictionary of runs : [files]
     runs = {}
     for file in files:
-        run_id = file.split('-')[0].strip() #get run name and delete whitespaces
+        run_id = file.split(' - ')[0].strip() #get run name and delete whitespaces
         runs.setdefault(run_id, []).append(file)
 
     for run, files in runs.items():
@@ -226,7 +226,7 @@ class CfxRun:
 
         quant_cq_cols = self._create_subset(self._core_cols, [self.head_target, self.head_fluor ,self.head_cq, self.head_origin])
         self.general_table = self.quant_cq[quant_cq_cols]
-
+        self.general_table[self.head_cq].fillna(0, inplace=True)
         #LOad End Points
         end_point_cols = self._create_subset(self._core_cols, [self.head_end_rfu, self.head_origin])
         self.general_table = self.general_table.merge(
@@ -274,7 +274,7 @@ class CfxRun:
             )
         matrix[self.head_well] = matrix[self.head_well].apply(
             lambda x :  x if (len(x) > 2) else (x[0] + "0" + x[1])
-            ) #Fix discrepancies in naming wells
+            )  #Fix discrepancies in naming wells
         return matrix
     
     def assign_samples(self, matrix):

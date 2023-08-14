@@ -36,6 +36,10 @@ class SqlTables():
     temperature: str='temperature'
     melt_rfu: str='melt_rfu_value'
 
+    #Generate tables
+
+    generate_melting: str="calc_melting"
+    generate_delta: str="delta_cq"
     #key values
 
     val_screening = 'Screening'

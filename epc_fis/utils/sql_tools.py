@@ -2,6 +2,7 @@ import getpass
 import pymysql
 import re
 import logging
+import pandas as pd
 from sqlalchemy import create_engine
 
 logger = logging.getLogger(__name__)
@@ -61,3 +62,36 @@ class SqlConnection():
 
     def launch_table(self, dataframe, dest_table, action = 'append'):
         dataframe.to_sql(dest_table, self.engine, if_exists = action, index = False)
+
+    def check_exist_table(self, table):
+        self.cursor.execute(f"SHOW TABLES LIKE '{table}'")
+
+        exists = self.cursor.fetchone() is not None
+
+        return exists
+    
+    def close_connection(self):
+
+        self.cursor.close()
+        self.connection.close()
+
+    def create_table_query(self, table, headers):
+        if headers == '*':
+            select_statement = '*'
+        else:
+            select_statement = ", ".join(headers)
+
+        query = f"""
+        SELECT {select_statement} FROM {table}
+        """
+        return query
+    
+    def execute_table_query(self, query):
+        if not hasattr(self, 'connection'):
+            logger.error("""
+            Error in _execute_query: This method require connection to database. Execute StudySample.connect_db and try again
+            """)
+        
+        df = pd.read_sql(query, self.engine)
+        
+        return df
